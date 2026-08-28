@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Frenzy — Football Knowledge Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#12203A;
+    --navy-light:#1C3153;
+    --cream:#FFF8EA;
+    --gold:#FFB84D;
+    --teal:#2EC4B6;
+    --pink:#FF6F91;
+    --ink:#152238;
+    --good:#3DCC7C;
+    --bad:#FF5D5D;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(46,196,182,0.18), transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(255,184,77,0.15), transparent 40%),
+      var(--navy);
+    font-family:'Nunito',sans-serif;
+    color:var(--cream);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:24px 16px 60px;
+  }
+  h1,h2,h3{font-family:'Baloo 2',sans-serif;margin:0;}
+  a{color:var(--gold);}
+  .top-nav{width:100%;max-width:720px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .top-nav a{text-decoration:none;font-weight:800;font-size:14px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-badge{
+    width:40px;height:40px;border-radius:50%;
+    background:conic-gradient(from 200deg, var(--teal), var(--gold), var(--pink), var(--teal));
+    box-shadow:0 0 0 3px var(--navy-light);
+  }
+  .brand h1{font-size:22px;color:var(--gold);letter-spacing:0.5px;}
+
+  .card{
+    width:100%;max-width:720px;
+    background:var(--navy-light);
+    border-radius:20px;
+    padding:24px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.35);
+    border:1px solid rgba(255,255,255,0.06);
+  }
+
+  #start-screen p{font-size:16px;line-height:1.5;color:#CBD5E8;}
+  #start-screen .rules{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0;}
+  #start-screen .rule{
+    flex:1;min-width:150px;
+    background:rgba(255,255,255,0.05);
+    border-radius:14px;
+    padding:14px;
+    text-align:center;
+  }
+  #start-screen .rule .emoji{font-size:26px;}
+  #start-screen .rule .label{font-weight:800;font-size:13px;margin-top:6px;color:var(--gold);}
+
+  input[type=text]{
+    width:100%;padding:12px 14px;border-radius:12px;border:none;
+    font-family:'Nunito',sans-serif;font-size:16px;font-weight:600;
+    background:var(--cream);color:var(--ink);
+  }
+  button{
+    font-family:'Baloo 2',sans-serif;
+    cursor:pointer;
+    border:none;
+    border-radius:14px;
+    font-weight:700;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--teal),#22A79A);
+    color:var(--navy);
+    padding:14px 22px;
+    font-size:17px;
+    width:100%;
+    margin-top:16px;
+    box-shadow:0 6px 0 #1C8F84;
+    transition:transform .05s ease;
+  }
+  .btn-primary:active{transform:translateY(4px);box-shadow:0 2px 0 #1C8F84;}
+
+  #game-screen{display:none;}
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .hud .pill{
+    background:rgba(255,255,255,0.08);
+    padding:6px 14px;border-radius:999px;font-weight:800;font-size:14px;
+  }
+  .hud .timer{
+    font-size:26px;font-weight:800;color:var(--gold);
+    min-width:60px;text-align:right;
+  }
+  .timer.warn{color:var(--bad);}
+  #timer-bar-track{height:6px;border-radius:6px;background:rgba(255,255,255,0.1);overflow:hidden;margin-bottom:18px;}
+  #timer-bar{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));width:100%;}
+
+  .category-tag{
+    display:inline-block;
+    background:rgba(255,184,77,0.15);
+    color:var(--gold);
+    font-size:12px;
+    font-weight:800;
+    padding:4px 12px;
+    border-radius:999px;
+    margin:0 auto 10px;
+  }
+  .tag-row{text-align:center;}
+
+  #ball-visual{
+    background:var(--cream);
+    border-radius:16px;
+    height:110px;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:16px;
+    font-size:56px;
+  }
+
+  .question-text{text-align:center;font-family:'Baloo 2',sans-serif;font-size:22px;color:var(--cream);margin-bottom:18px;line-height:1.3;}
+
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .answer-btn{
+    background:rgba(255,255,255,0.06);
+    color:var(--cream);
+    border:2px solid rgba(255,255,255,0.12);
+    padding:16px 10px;
+    font-size:15px;
+    text-align:center;
+  }
+  .answer-btn:hover{border-color:var(--teal);}
+  .answer-btn.correct{background:var(--good);color:var(--ink);border-color:var(--good);}
+  .answer-btn.wrong{background:var(--bad);color:#fff;border-color:var(--bad);}
+  .answer-btn:disabled{cursor:default;}
+
+  #feedback{text-align:center;font-weight:800;margin-top:14px;min-height:22px;font-size:15px;}
+
+  #results-screen{display:none;text-align:center;}
+  #results-screen .score-big{font-family:'Baloo 2',sans-serif;font-size:52px;color:var(--gold);margin:6px 0;}
+  #results-screen p{color:#CBD5E8;}
+  #name-form{display:flex;gap:10px;margin-top:18px;}
+  #name-form input{flex:1;}
+  #name-form button{padding:0 18px;background:var(--pink);color:#fff;}
+
+  table{width:100%;border-collapse:collapse;margin-top:16px;}
+  th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08);}
+  th{color:var(--gold);font-family:'Baloo 2',sans-serif;font-size:14px;}
+  td{font-weight:600;}
+  tr:first-child td{color:var(--gold);font-weight:800;}
+
+  .footer-note{font-size:12px;color:#8494B5;margin-top:24px;text-align:center;max-width:600px;}
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <div class="brand">
+    <div class="brand-badge"></div>
+    <h1>Football Frenzy</h1>
+  </div>
+  <a href="index.html">&larr; Back to games</a>
+</div>
+
+<div class="card" id="start-screen">
+  <h2>Football knowledge quiz!</h2>
+  <p>Legends, Premier League, Champions League, and the world's top clubs. Answer as many as you can before time runs out.</p>
+  <div class="rules">
+    <div class="rule"><div class="emoji">⏱️</div><div class="label">60 seconds<br>total</div></div>
+    <div class="rule"><div class="emoji">⚽</div><div class="label">200+<br>questions</div></div>
+    <div class="rule"><div class="emoji">🏆</div><div class="label">Score = questions<br>you get right</div></div>
+  </div>
+  <button class="btn-primary" id="start-btn">Start the quiz</button>
+</div>
+
+<div class="card" id="game-screen">
+  <div class="hud">
+    <span class="pill" id="score-pill">Correct: 0</span>
+    <span class="timer" id="timer-display">60</span>
+  </div>
+  <div id="timer-bar-track"><div id="timer-bar"></div></div>
+  <div class="tag-row"><span class="category-tag" id="category-tag">Category</span></div>
+  <div id="ball-visual">⚽</div>
+  <div class="question-text" id="question-text">Question</div>
+  <div class="answers" id="answers"></div>
+  <div id="feedback"></div>
+</div>
+
+<div class="card" id="results-screen">
+  <h2>Full time!</h2>
+  <p>Questions answered correctly:</p>
+  <div class="score-big" id="final-score">0</div>
+  <form id="name-form">
+    <input type="text" id="player-name" placeholder="Enter your name" maxlength="18" required>
+    <button type="submit">Save score</button>
+  </form>
+  <h3 style="margin-top:26px;">Top scores</h3>
+  <table id="leaderboard"><tbody></tbody></table>
+  <button class="btn-primary" id="play-again-btn">Play again</button>
+</div>
+
+<p class="footer-note">Records like title counts and goal-scoring records are current as of mid-2026 and will go out of date as new seasons are played. Scores save on this device only.</p>
+
+<script>
+/* ---------- Question bank ---------- */
+/* Each question: category, q (question text), options (4), answer (must match one option exactly) */
+const QUESTIONS = [
+// ===== LEGENDS =====
+{category:"Legends", q:"Which country is Pelé from?", options:["Brazil","Argentina","Portugal","Uruguay"], answer:"Brazil"},
+{category:"Legends", q:"Which country is Diego Maradona from?", options:["Argentina","Brazil","Chile","Spain"], answer:"Argentina"},
+{category:"Legends", q:"Which country is Cristiano Ronaldo from?", options:["Portugal","Spain","Brazil","Italy"], answer:"Portugal"},
+{category:"Legends", q:"Which country is Lionel Messi from?", options:["Argentina","Uruguay","Brazil","Spain"], answer:"Argentina"},
+{category:"Legends", q:"Which club did Lionel Messi spend most of his career at?", options:["Barcelona","Real Madrid","Juventus","AC Milan"], answer:"Barcelona"},
+{category:"Legends", q:"Which club did Cristiano Ronaldo NOT play for?", options:["Barcelona","Real Madrid","Manchester United","Juventus"], answer:"Barcelona"},
+{category:"Legends", q:"Which country is Zinedine Zidane from?", options:["France","Algeria","Italy","Spain"], answer:"France"},
+{category:"Legends", q:"What position did Zinedine Zidane play?", options:["Midfielder","Goalkeeper","Defender","Striker"], answer:"Midfielder"},
+{category:"Legends", q:"Which club is David Beckham most associated with?", options:["Manchester United","Chelsea","Arsenal","Liverpool"], answer:"Manchester United"},
+{category:"Legends", q:"Which country is David Beckham from?", options:["England","Wales","Scotland","Ireland"], answer:"England"},
+{category:"Legends", q:"Which country is Neymar from?", options:["Brazil","Portugal","Argentina","Colombia"], answer:"Brazil"},
+{category:"Legends", q:"Which country is Kylian Mbappé from?", options:["France","Cameroon","Belgium","Morocco"], answer:"France"},
+{category:"Legends", q:"Which club did Kylian Mbappé join in 2024?", options:["Real Madrid","Barcelona","Manchester City","Bayern Munich"], answer:"Real Madrid"},
+{category:"Legends", q:"Which country is Erling Haaland from?", options:["Norway","Sweden","Denmark","Iceland"], answer:"Norway"},
+{category:"Legends", q:"Which club does Erling Haaland play for?", options:["Manchester City","Liverpool","Arsenal","Chelsea"], answer:"Manchester City"},
+{category:"Legends", q:"Which country is Mohamed Salah from?", options:["Egypt","Morocco","Algeria","Tunisia"], answer:"Egypt"},
+{category:"Legends", q:"Which club is Mohamed Salah famous for playing at?", options:["Liverpool","Chelsea","Arsenal","Everton"], answer:"Liverpool"},
+{category:"Legends", q:"Which country is Kevin De Bruyne from?", options:["Belgium","Netherlands","Germany","France"], answer:"Belgium"},
+{category:"Legends", q:"Which country is Luka Modrić from?", options:["Croatia","Serbia","Slovenia","Bosnia"], answer:"Croatia"},
+{category:"Legends", q:"Which club is Luka Modrić most associated with?", options:["Real Madrid","Barcelona","Atletico Madrid","Sevilla"], answer:"Real Madrid"},
+{category:"Legends", q:"Which country is Luis Suárez from?", options:["Uruguay","Argentina","Chile","Paraguay"], answer:"Uruguay"},
+{category:"Legends", q:"Which position did Gianluigi Buffon play?", options:["Goalkeeper","Defender","Midfielder","Striker"], answer:"Goalkeeper"},
+{category:"Legends", q:"Which country is Gianluigi Buffon from?", options:["Italy","Spain","France","Portugal"], answer:"Italy"},
+{category:"Legends", q:"Which country is Andrés Iniesta from?", options:["Spain","Portugal","Italy","France"], answer:"Spain"},
+{category:"Legends", q:"Which country is Xavi Hernández from?", options:["Spain","Portugal","Italy","Argentina"], answer:"Spain"},
+{category:"Legends", q:"Which country is Johan Cruyff from?", options:["Netherlands","Belgium","Germany","Denmark"], answer:"Netherlands"},
+{category:"Legends", q:"Which country is Franz Beckenbauer from?", options:["Germany","Austria","Switzerland","Netherlands"], answer:"Germany"},
+{category:"Legends", q:"Which country is Paolo Maldini from?", options:["Italy","Spain","France","Portugal"], answer:"Italy"},
+{category:"Legends", q:"Which club is Paolo Maldini famous for playing his whole career at?", options:["AC Milan","Juventus","Inter Milan","Roma"], answer:"AC Milan"},
+{category:"Legends", q:"Which country is George Best from?", options:["Northern Ireland","Ireland","Scotland","Wales"], answer:"Northern Ireland"},
+{category:"Legends", q:"Which country is Thierry Henry from?", options:["France","Belgium","Netherlands","Senegal"], answer:"France"},
+{category:"Legends", q:"Which club is Thierry Henry most famous for playing at?", options:["Arsenal","Chelsea","Manchester United","Liverpool"], answer:"Arsenal"},
+{category:"Legends", q:"Which country is Didier Drogba from?", options:["Ivory Coast","Senegal","Ghana","Cameroon"], answer:"Ivory Coast"},
+{category:"Legends", q:"Which club is Didier Drogba most famous for playing at?", options:["Chelsea","Arsenal","Manchester City","Liverpool"], answer:"Chelsea"},
+{category:"Legends", q:"Which country is Wayne Rooney from?", options:["England","Wales","Scotland","Ireland"], answer:"England"},
+{category:"Legends", q:"Which country is Steven Gerrard from?", options:["England","Scotland","Wales","Ireland"], answer:"England"},
+{category:"Legends", q:"Which club is Steven Gerrard most famous for playing at?", options:["Liverpool","Everton","Chelsea","Manchester United"], answer:"Liverpool"},
+{category:"Legends", q:"Which country is Frank Lampard from?", options:["England","Wales","Scotland","Ireland"], answer:"England"},
+{category:"Legends", q:"Which country is Ronaldinho from?", options:["Brazil","Portugal","Argentina","Spain"], answer:"Brazil"},
+{category:"Legends", q:"Which country is Zico from?", options:["Brazil","Portugal","Argentina","Uruguay"], answer:"Brazil"},
+{category:"Legends", q:"Eusébio was one of Portugal's greatest players. Where was he born?", options:["Mozambique","Angola","Brazil","Spain"], answer:"Mozambique"},
+{category:"Legends", q:"Which country is Michel Platini from?", options:["France","Italy","Belgium","Switzerland"], answer:"France"},
+{category:"Legends", q:"Which country is Roberto Baggio from?", options:["Italy","Spain","France","Portugal"], answer:"Italy"},
+{category:"Legends", q:"Which country is Francesco Totti from?", options:["Italy","Spain","France","Argentina"], answer:"Italy"},
+{category:"Legends", q:"Which club did Francesco Totti play his whole career at?", options:["Roma","Lazio","Juventus","AC Milan"], answer:"Roma"},
+{category:"Legends", q:"Which country is Robert Lewandowski from?", options:["Poland","Czechia","Germany","Slovakia"], answer:"Poland"},
+{category:"Legends", q:"Which country is Zlatan Ibrahimović from?", options:["Sweden","Norway","Denmark","Finland"], answer:"Sweden"},
+{category:"Legends", q:"Which country is Ryan Giggs from?", options:["Wales","England","Scotland","Ireland"], answer:"Wales"},
+{category:"Legends", q:"Which club did Ryan Giggs spend his whole career at?", options:["Manchester United","Manchester City","Liverpool","Everton"], answer:"Manchester United"},
+{category:"Legends", q:"Which country is Rio Ferdinand from?", options:["England","Jamaica","Scotland","Wales"], answer:"England"},
+{category:"Legends", q:"Which country is Sergio Ramos from?", options:["Spain","Portugal","Italy","France"], answer:"Spain"},
+{category:"Legends", q:"Which country is Iker Casillas from?", options:["Spain","Portugal","Italy","France"], answer:"Spain"},
+{category:"Legends", q:"How many Ballon d'Or awards has Lionel Messi won, the most ever?", options:["8","6","7","9"], answer:"8"},
+{category:"Legends", q:"How many Ballon d'Or awards has Cristiano Ronaldo won?", options:["5","8","4","6"], answer:"5"},
+{category:"Legends", q:"Who won the Ballon d'Or in 2025?", options:["Ousmane Dembélé","Kylian Mbappé","Erling Haaland","Lionel Messi"], answer:"Ousmane Dembélé"},
+{category:"Legends", q:"Which club is Karim Benzema most associated with?", options:["Real Madrid","Barcelona","Atletico Madrid","Lyon"], answer:"Real Madrid"},
+{category:"Legends", q:"Which country is Karim Benzema from?", options:["France","Algeria","Morocco","Tunisia"], answer:"France"},
+{category:"Legends", q:"Which country is Virgil van Dijk from?", options:["Netherlands","Belgium","Suriname","Germany"], answer:"Netherlands"},
+{category:"Legends", q:"Which country is Harry Kane from?", options:["England","Wales","Scotland","Ireland"], answer:"England"},
+{category:"Legends", q:"Which club does Harry Kane play for now?", options:["Bayern Munich","Real Madrid","Barcelona","Paris Saint-Germain"], answer:"Bayern Munich"},
+{category:"Legends", q:"Which country is Marco van Basten from?", options:["Netherlands","Belgium","Germany","Denmark"], answer:"Netherlands"},
+// ===== PREMIER LEAGUE =====
+{category:"Premier League", q:"How many clubs play in the Premier League each season?", options:["20","18","22","24"], answer:"20"},
+{category:"Premier League", q:"Which club has won the most Premier League titles?", options:["Manchester United","Manchester City","Chelsea","Arsenal"], answer:"Manchester United"},
+{category:"Premier League", q:"How many Premier League titles has Manchester United won?", options:["13","10","15","8"], answer:"13"},
+{category:"Premier League", q:"Which manager led Manchester United to 13 Premier League titles?", options:["Alex Ferguson","José Mourinho","Pep Guardiola","Arsène Wenger"], answer:"Alex Ferguson"},
+{category:"Premier League", q:"Which club won the Premier League in the 2025-26 season?", options:["Arsenal","Manchester City","Liverpool","Chelsea"], answer:"Arsenal"},
+{category:"Premier League", q:"Which club won the Premier League in the 2024-25 season?", options:["Liverpool","Manchester City","Arsenal","Chelsea"], answer:"Liverpool"},
+{category:"Premier League", q:"Which club won the Premier League title four seasons in a row from 2020-21 to 2023-24?", options:["Manchester City","Liverpool","Chelsea","Arsenal"], answer:"Manchester City"},
+{category:"Premier League", q:"Who is the Premier League's all-time top goal scorer?", options:["Alan Shearer","Wayne Rooney","Harry Kane","Thierry Henry"], answer:"Alan Shearer"},
+{category:"Premier League", q:"What is Arsenal's nickname?", options:["The Gunners","The Reds","The Hammers","The Blues"], answer:"The Gunners"},
+{category:"Premier League", q:"What is Liverpool's nickname?", options:["The Reds","The Blues","The Toffees","The Gunners"], answer:"The Reds"},
+{category:"Premier League", q:"What is Chelsea's nickname?", options:["The Blues","The Reds","The Hammers","The Eagles"], answer:"The Blues"},
+{category:"Premier League", q:"What is Manchester United's nickname?", options:["The Red Devils","The Blues","The Toffees","The Gunners"], answer:"The Red Devils"},
+{category:"Premier League", q:"What is Manchester City's nickname?", options:["The Citizens","The Reds","The Toffees","The Hammers"], answer:"The Citizens"},
+{category:"Premier League", q:"What is Tottenham Hotspur's nickname?", options:["Spurs","The Gunners","The Hammers","The Eagles"], answer:"Spurs"},
+{category:"Premier League", q:"What is West Ham United's nickname?", options:["The Hammers","The Eagles","The Toffees","The Foxes"], answer:"The Hammers"},
+{category:"Premier League", q:"What is Everton's nickname?", options:["The Toffees","The Citizens","The Reds","The Eagles"], answer:"The Toffees"},
+{category:"Premier League", q:"What is Newcastle United's nickname?", options:["The Magpies","The Hammers","The Toffees","The Foxes"], answer:"The Magpies"},
+{category:"Premier League", q:"What is Leicester City's nickname?", options:["The Foxes","The Eagles","The Hammers","The Magpies"], answer:"The Foxes"},
+{category:"Premier League", q:"What is Aston Villa's nickname?", options:["The Villans","The Gunners","The Toffees","The Eagles"], answer:"The Villans"},
+{category:"Premier League", q:"What is Crystal Palace's nickname?", options:["The Eagles","The Hammers","The Foxes","The Toffees"], answer:"The Eagles"},
+{category:"Premier League", q:"Which stadium is Arsenal's home ground?", options:["Emirates Stadium","Old Trafford","Anfield","Stamford Bridge"], answer:"Emirates Stadium"},
+{category:"Premier League", q:"Which stadium is Manchester United's home ground?", options:["Old Trafford","Anfield","Emirates Stadium","Stamford Bridge"], answer:"Old Trafford"},
+{category:"Premier League", q:"Which stadium is Liverpool's home ground?", options:["Anfield","Old Trafford","Goodison Park","Stamford Bridge"], answer:"Anfield"},
+{category:"Premier League", q:"Which stadium is Chelsea's home ground?", options:["Stamford Bridge","Emirates Stadium","Anfield","The Etihad"], answer:"Stamford Bridge"},
+{category:"Premier League", q:"Which stadium is Manchester City's home ground?", options:["Etihad Stadium","Old Trafford","Anfield","Emirates Stadium"], answer:"Etihad Stadium"},
+{category:"Premier League", q:"Which stadium is Tottenham Hotspur's home ground?", options:["Tottenham Hotspur Stadium","Emirates Stadium","Stamford Bridge","Anfield"], answer:"Tottenham Hotspur Stadium"},
+{category:"Premier League", q:"Which club went an entire Premier League season unbeaten in 2003-04?", options:["Arsenal","Chelsea","Manchester United","Liverpool"], answer:"Arsenal"},
+{category:"Premier League", q:"What are Arsenal's 2003-04 Invincibles famous for?", options:["Not losing a single league game","Winning every game","Scoring 100 goals","Never conceding a goal"], answer:"Not losing a single league game"},
+{category:"Premier League", q:"In what year was the Premier League founded?", options:["1992","1988","1995","2000"], answer:"1992"},
+{category:"Premier League", q:"How many points are awarded for a win in the Premier League?", options:["3","2","1","5"], answer:"3"},
+{category:"Premier League", q:"How many points are awarded for a draw in the Premier League?", options:["1","2","0","3"], answer:"1"},
+{category:"Premier League", q:"How many teams are relegated from the Premier League each season?", options:["3","2","4","1"], answer:"3"},
+{category:"Premier League", q:"Which manager won the Premier League with Chelsea, then later with Manchester United?", options:["José Mourinho","Pep Guardiola","Carlo Ancelotti","Jürgen Klopp"], answer:"José Mourinho"},
+{category:"Premier League", q:"Which manager guided Liverpool to the 2019-20 Premier League title?", options:["Jürgen Klopp","Arne Slot","Rafael Benítez","Brendan Rodgers"], answer:"Jürgen Klopp"},
+{category:"Premier League", q:"Which manager guided Liverpool to the 2024-25 Premier League title?", options:["Arne Slot","Jürgen Klopp","Roy Hodgson","Kenny Dalglish"], answer:"Arne Slot"},
+{category:"Premier League", q:"Which manager guided Arsenal to the 2025-26 Premier League title?", options:["Mikel Arteta","Arsène Wenger","Unai Emery","Freddie Ljungberg"], answer:"Mikel Arteta"},
+{category:"Premier League", q:"Which club is known for having two famous local rivals nicknamed the Manchester Derby?", options:["Manchester United and Manchester City","Liverpool and Everton","Arsenal and Tottenham","Chelsea and Fulham"], answer:"Manchester United and Manchester City"},
+{category:"Premier League", q:"What is the Liverpool vs Everton match commonly called?", options:["The Merseyside Derby","The North London Derby","The Manchester Derby","The North West Derby"], answer:"The Merseyside Derby"},
+{category:"Premier League", q:"What is the Arsenal vs Tottenham match commonly called?", options:["The North London Derby","The Merseyside Derby","The South London Derby","The London Derby"], answer:"The North London Derby"},
+{category:"Premier League", q:"Which club plays its home games at Villa Park?", options:["Aston Villa","West Bromwich Albion","Wolverhampton Wanderers","Birmingham City"], answer:"Aston Villa"},
+{category:"Premier League", q:"What colour shirts does Manchester United usually wear at home?", options:["Red","Blue","Green","White"], answer:"Red"},
+{category:"Premier League", q:"What colour shirts does Chelsea usually wear at home?", options:["Blue","Red","Green","Black"], answer:"Blue"},
+{category:"Premier League", q:"What colour shirts does Liverpool usually wear at home?", options:["Red","Blue","Green","White"], answer:"Red"},
+{category:"Premier League", q:"What colour shirts does Arsenal usually wear at home?", options:["Red","Blue","Green","Yellow"], answer:"Red"},
+{category:"Premier League", q:"What colour shirts does Manchester City usually wear at home?", options:["Sky blue","Red","Green","Black"], answer:"Sky blue"},
+// ===== CHAMPIONS LEAGUE =====
+{category:"Champions League", q:"Which club has won the most Champions League / European Cup titles?", options:["Real Madrid","AC Milan","Bayern Munich","Liverpool"], answer:"Real Madrid"},
+{category:"Champions League", q:"How many Champions League titles has Real Madrid won?", options:["15","10","12","8"], answer:"15"},
+{category:"Champions League", q:"Which club has won the second-most Champions League / European Cup titles, with 7?", options:["AC Milan","Bayern Munich","Liverpool","Barcelona"], answer:"AC Milan"},
+{category:"Champions League", q:"How many Champions League titles have both Bayern Munich and Liverpool won?", options:["6","5","7","4"], answer:"6"},
+{category:"Champions League", q:"Which club won the Champions League in 2025 and 2026, back-to-back?", options:["Paris Saint-Germain","Real Madrid","Manchester City","Bayern Munich"], answer:"Paris Saint-Germain"},
+{category:"Champions League", q:"Who is the Champions League's all-time top scorer?", options:["Cristiano Ronaldo","Lionel Messi","Robert Lewandowski","Karim Benzema"], answer:"Cristiano Ronaldo"},
+{category:"Champions League", q:"Who is second on the Champions League all-time scoring list?", options:["Lionel Messi","Cristiano Ronaldo","Karim Benzema","Robert Lewandowski"], answer:"Lionel Messi"},
+{category:"Champions League", q:"In which year was the European Cup, now the Champions League, first held?", options:["1955","1945","1960","1970"], answer:"1955"},
+{category:"Champions League", q:"Real Madrid won five European Cups in a row starting in which decade?", options:["1950s","1960s","1970s","1980s"], answer:"1950s"},
+{category:"Champions League", q:"Which club famously came back from 3-0 down to win the 2005 Champions League final?", options:["Liverpool","AC Milan","Chelsea","Manchester United"], answer:"Liverpool"},
+{category:"Champions League", q:"The 2005 Champions League final comeback is often called what?", options:["The Miracle of Istanbul","The Miracle of Madrid","The Comeback Kings","The Great Escape"], answer:"The Miracle of Istanbul"},
+{category:"Champions League", q:"Which English club won the Champions League as part of a historic Treble in 1999?", options:["Manchester United","Liverpool","Chelsea","Arsenal"], answer:"Manchester United"},
+{category:"Champions League", q:"What does winning 'the Treble' mean in football?", options:["Winning three major trophies in one season","Scoring three goals in a final","Winning three Champions Leagues in a row","Beating three rivals in one season"], answer:"Winning three major trophies in one season"},
+{category:"Champions League", q:"How many teams currently compete in the Champions League league phase?", options:["36","32","24","40"], answer:"36"},
+{category:"Champions League", q:"Which trophy do Champions League winners lift, nicknamed 'Big Ears'?", options:["The European Cup trophy","The Golden Boot","The Ballon d'Or","The FA Cup"], answer:"The European Cup trophy"},
+{category:"Champions League", q:"Which club lost the Champions League final a record seven times?", options:["Juventus","Bayern Munich","Liverpool","Arsenal"], answer:"Juventus"},
+{category:"Champions League", q:"Which club won the Champions League final in 2025, beating Inter Milan 5-0?", options:["Paris Saint-Germain","Real Madrid","Manchester City","Bayern Munich"], answer:"Paris Saint-Germain"},
+{category:"Champions League", q:"Barcelona and Real Madrid have both won the Champions League. Which country are they from?", options:["Spain","Portugal","Italy","France"], answer:"Spain"},
+{category:"Champions League", q:"Which country has provided the most Champions League winning clubs?", options:["Spain","England","Italy","Germany"], answer:"Spain"},
+{category:"Champions League", q:"Which German club has won the Champions League 6 times?", options:["Bayern Munich","Borussia Dortmund","Bayer Leverkusen","RB Leipzig"], answer:"Bayern Munich"},
+{category:"Champions League", q:"Which Dutch club famously won three Champions Leagues in a row in the early 1970s?", options:["Ajax","PSV Eindhoven","Feyenoord","AZ Alkmaar"], answer:"Ajax"},
+{category:"Champions League", q:"Which competition is one level below the Champions League in European football?", options:["Europa League","Conference League","FA Cup","World Cup"], answer:"Europa League"},
+{category:"Champions League", q:"What is the third-tier UEFA club competition called, launched in 2021?", options:["Conference League","Europa League","Nations League","Super Cup"], answer:"Conference League"},
+{category:"Champions League", q:"Real Madrid beat which club 2-1 in the 2024 Champions League final?", options:["Borussia Dortmund","Manchester City","Bayern Munich","Paris Saint-Germain"], answer:"Borussia Dortmund"},
+{category:"Champions League", q:"Which club won the Champions League final in 2023, beating Inter Milan?", options:["Manchester City","Real Madrid","Bayern Munich","Chelsea"], answer:"Manchester City"},
+{category:"Champions League", q:"Which trophy did Manchester City complete alongside the Champions League in their 2022-23 Treble?", options:["Premier League and FA Cup","La Liga and Copa del Rey","Serie A and Coppa Italia","Bundesliga and DFB-Pokal"], answer:"Premier League and FA Cup"},
+// ===== WORLD FOOTBALL / TOP LEAGUES =====
+{category:"World Football", q:"Which country has won the most FIFA World Cups?", options:["Brazil","Germany","Italy","Argentina"], answer:"Brazil"},
+{category:"World Football", q:"How many World Cups has Brazil won?", options:["5","4","3","6"], answer:"5"},
+{category:"World Football", q:"Which country won the 2022 FIFA World Cup?", options:["Argentina","France","Brazil","Croatia"], answer:"Argentina"},
+{category:"World Football", q:"Which country won the 2018 FIFA World Cup?", options:["France","Croatia","Belgium","England"], answer:"France"},
+{category:"World Football", q:"Which country won the 2014 FIFA World Cup?", options:["Germany","Argentina","Brazil","Netherlands"], answer:"Germany"},
+{category:"World Football", q:"How often is the FIFA World Cup held?", options:["Every 4 years","Every 2 years","Every year","Every 5 years"], answer:"Every 4 years"},
+{category:"World Football", q:"Which club has won the most Spanish La Liga titles?", options:["Real Madrid","Barcelona","Atletico Madrid","Sevilla"], answer:"Real Madrid"},
+{category:"World Football", q:"Which club has won the most Italian Serie A titles?", options:["Juventus","AC Milan","Inter Milan","Roma"], answer:"Juventus"},
+{category:"World Football", q:"Which club has won the most German Bundesliga titles?", options:["Bayern Munich","Borussia Dortmund","Bayer Leverkusen","RB Leipzig"], answer:"Bayern Munich"},
+{category:"World Football", q:"Which club has dominated the French Ligue 1 in recent seasons?", options:["Paris Saint-Germain","Marseille","Lyon","Monaco"], answer:"Paris Saint-Germain"},
+{category:"World Football", q:"Which country's top league is Serie A?", options:["Italy","Spain","France","Portugal"], answer:"Italy"},
+{category:"World Football", q:"Which country's top league is La Liga?", options:["Spain","Italy","Portugal","France"], answer:"Spain"},
+{category:"World Football", q:"Which country's top league is the Bundesliga?", options:["Germany","Austria","Switzerland","Netherlands"], answer:"Germany"},
+{category:"World Football", q:"Which country's top league is Ligue 1?", options:["France","Belgium","Switzerland","Monaco"], answer:"France"},
+{category:"World Football", q:"What is the biggest rivalry match between Real Madrid and Barcelona called?", options:["El Clásico","El Derbi","La Liga Cup","El Grande"], answer:"El Clásico"},
+{category:"World Football", q:"What is the football World Cup trophy called?", options:["The FIFA World Cup Trophy","The Golden Cup","The Jules Rimet Cup (its old name, still often used)","The Champions Trophy"], answer:"The FIFA World Cup Trophy"},
+{category:"World Football", q:"How many players does each football team have on the pitch, including the goalkeeper?", options:["11","10","12","9"], answer:"11"},
+{category:"World Football", q:"How long is a standard football match, not counting stoppage time?", options:["90 minutes","80 minutes","100 minutes","60 minutes"], answer:"90 minutes"},
+{category:"World Football", q:"What card does a referee show for a serious foul that sends a player off?", options:["Red card","Yellow card","Blue card","Black card"], answer:"Red card"},
+{category:"World Football", q:"What card does a referee show as a warning?", options:["Yellow card","Red card","Blue card","Green card"], answer:"Yellow card"},
+{category:"World Football", q:"What is it called when a player scores three goals in one match?", options:["A hat-trick","A treble","A triple","A trio"], answer:"A hat-trick"},
+{category:"World Football", q:"What is the offside rule designed to prevent?", options:["Attacking players gaining an unfair advantage behind the defence","Players from tackling too hard","Goalkeepers leaving their box","Teams from scoring too many goals"], answer:"Attacking players gaining an unfair advantage behind the defence"},
+{category:"World Football", q:"What is awarded to a team when a foul happens inside the penalty area?", options:["A penalty kick","A corner kick","A free kick outside the box","A throw-in"], answer:"A penalty kick"},
+{category:"World Football", q:"Which competition do European national teams play in every four years?", options:["UEFA European Championship (the Euros)","The Copa America","The World Cup","The Nations League"], answer:"UEFA European Championship (the Euros)"},
+{category:"World Football", q:"Which country won UEFA Euro 2024?", options:["Spain","England","Germany","France"], answer:"Spain"},
+{category:"World Football", q:"Which continent hosts the Copa América?", options:["South America","Europe","Africa","Asia"], answer:"South America"},
+{category:"World Football", q:"Which club is nicknamed 'the Old Lady' in Italian football?", options:["Juventus","AC Milan","Inter Milan","Roma"], answer:"Juventus"},
+{category:"World Football", q:"Which club is nicknamed 'the Rossoneri' (red and blacks)?", options:["AC Milan","Inter Milan","Juventus","Napoli"], answer:"AC Milan"},
+{category:"World Football", q:"Which German club is famous for its Yellow Wall of fans?", options:["Borussia Dortmund","Bayern Munich","Bayer Leverkusen","Schalke"], answer:"Borussia Dortmund"},
+{category:"World Football", q:"Which Brazilian club is Pelé most associated with?", options:["Santos","Flamengo","Corinthians","São Paulo"], answer:"Santos"},
+{category:"World Football", q:"Which Argentine club is Diego Maradona most associated with as a boyhood club?", options:["Boca Juniors","River Plate","Independiente","Racing Club"], answer:"Boca Juniors"},
+{category:"World Football", q:"Which shape is a football pitch?", options:["Rectangle","Square","Oval","Circle"], answer:"Rectangle"},
+{category:"World Football", q:"How many players from each team are allowed on the pitch at kickoff?", options:["11","10","12","9"], answer:"11"},
+{category:"World Football", q:"What is the term for a goalkeeper saving every shot in a match without conceding?", options:["A clean sheet","A shutout win","A perfect game","A blank slate"], answer:"A clean sheet"},
+{category:"World Football", q:"Which award is given to the top goal scorer of a World Cup tournament?", options:["The Golden Boot","The Golden Ball","The Golden Glove","The Silver Boot"], answer:"The Golden Boot"},
+{category:"World Football", q:"Which award is given to the best player of a World Cup tournament?", options:["The Golden Ball","The Golden Boot","The Golden Glove","MVP Trophy"], answer:"The Golden Ball"},
+{category:"World Football", q:"Which award is given to the best goalkeeper of a World Cup tournament?", options:["The Golden Glove","The Golden Boot","The Golden Ball","Best Keeper Award"], answer:"The Golden Glove"},
+{category:"World Football", q:"Which country hosted the 2022 FIFA World Cup?", options:["Qatar","Russia","United States","Brazil"], answer:"Qatar"},
+{category:"World Football", q:"Which country hosted the 2018 FIFA World Cup?", options:["Russia","Qatar","Brazil","Germany"], answer:"Russia"},
+{category:"World Football", q:"Which countries are jointly hosting the 2026 FIFA World Cup?", options:["USA, Canada and Mexico","Spain and Portugal","England and Scotland","Brazil and Argentina"], answer:"USA, Canada and Mexico"},
+{category:"World Football", q:"How many countries jointly host the 2026 FIFA World Cup?", options:["3","2","4","1"], answer:"3"},
+{category:"World Football", q:"What is the standard weight range of a professional football roughly, in ounces?", options:["14-16 ounces","10-12 ounces","18-20 ounces","8-10 ounces"], answer:"14-16 ounces"},
+{category:"World Football", q:"Which continent's football body is called CONMEBOL?", options:["South America","Europe","Africa","Asia"], answer:"South America"},
+{category:"World Football", q:"Which continent's football body is called UEFA?", options:["Europe","South America","Africa","Asia"], answer:"Europe"},
+{category:"World Football", q:"What does FIFA stand for in football?", options:["The international body that governs world football","The European football body","The world referees' union","The players' trade union"], answer:"The international body that governs world football"},
+{category:"World Football", q:"Which Portuguese club did Cristiano Ronaldo start his professional career at?", options:["Sporting CP","Benfica","Porto","Braga"], answer:"Sporting CP"},
+{category:"World Football", q:"Which club did Lionel Messi join in the USA in 2023?", options:["Inter Miami","LA Galaxy","New York City FC","Atlanta United"], answer:"Inter Miami"},
+{category:"World Football", q:"Which position on the pitch is closest to the goal, tasked with stopping shots?", options:["Goalkeeper","Striker","Winger","Midfielder"], answer:"Goalkeeper"},
+{category:"World Football", q:"Which position is mainly responsible for scoring goals?", options:["Striker","Goalkeeper","Centre-back","Full-back"], answer:"Striker"},
+{category:"World Football", q:"What is it called when the score is level after normal time and extra time in a knockout match, decided by kicks?", options:["A penalty shootout","A golden goal","A replay","Sudden death"], answer:"A penalty shootout"},
+{category:"Legends", q:"Which country is Sadio Mané from?", options:["Senegal","Ivory Coast","Nigeria","Ghana"], answer:"Senegal"},
+{category:"Legends", q:"Which country is Riyad Mahrez from?", options:["Algeria","Morocco","Tunisia","Egypt"], answer:"Algeria"},
+{category:"Legends", q:"Which country is Son Heung-min from?", options:["South Korea","Japan","China","North Korea"], answer:"South Korea"},
+{category:"Legends", q:"Which club is Son Heung-min most associated with?", options:["Tottenham Hotspur","Arsenal","Chelsea","Liverpool"], answer:"Tottenham Hotspur"},
+{category:"Legends", q:"Which country is Bukayo Saka from?", options:["England","Nigeria","Ghana","Wales"], answer:"England"},
+{category:"Legends", q:"Which country is Jude Bellingham from?", options:["England","Wales","Scotland","Ireland"], answer:"England"},
+{category:"Legends", q:"Which club does Jude Bellingham play for?", options:["Real Madrid","Barcelona","Manchester City","Bayern Munich"], answer:"Real Madrid"},
+{category:"Legends", q:"Which country is Vinícius Júnior from?", options:["Brazil","Portugal","Argentina","Uruguay"], answer:"Brazil"},
+{category:"Legends", q:"Which club does Vinícius Júnior play for?", options:["Real Madrid","Barcelona","Paris Saint-Germain","AC Milan"], answer:"Real Madrid"},
+{category:"Legends", q:"Which country is Pedri from?", options:["Spain","Portugal","Italy","France"], answer:"Spain"},
+{category:"Legends", q:"Which club does Pedri play for?", options:["Barcelona","Real Madrid","Atletico Madrid","Sevilla"], answer:"Barcelona"},
+{category:"Legends", q:"Which country is Toni Kroos from?", options:["Germany","Austria","Switzerland","Netherlands"], answer:"Germany"},
+{category:"Legends", q:"Which country is Xabi Alonso from?", options:["Spain","Portugal","Italy","France"], answer:"Spain"},
+{category:"Legends", q:"Which country is Pep Guardiola from?", options:["Spain","Portugal","Italy","Argentina"], answer:"Spain"},
+{category:"Legends", q:"Which club is Pep Guardiola the manager of?", options:["Manchester City","Liverpool","Chelsea","Arsenal"], answer:"Manchester City"},
+{category:"Legends", q:"Which country is Jürgen Klopp from?", options:["Germany","Austria","Switzerland","Netherlands"], answer:"Germany"},
+{category:"Legends", q:"Which country is Arsène Wenger from?", options:["France","Belgium","Switzerland","Germany"], answer:"France"},
+{category:"Premier League", q:"What is Wolverhampton Wanderers' nickname?", options:["Wolves","The Foxes","The Baggies","The Hornets"], answer:"Wolves"},
+{category:"Premier League", q:"What is Brighton & Hove Albion's nickname?", options:["The Seagulls","The Eagles","The Toffees","The Hornets"], answer:"The Seagulls"},
+{category:"Premier League", q:"What is Fulham's nickname?", options:["The Cottagers","The Hammers","The Hornets","The Baggies"], answer:"The Cottagers"},
+{category:"Premier League", q:"What is Brentford's nickname?", options:["The Bees","The Hornets","The Wasps","The Bees' rival"], answer:"The Bees"},
+{category:"Premier League", q:"Which club plays home games at the King Power Stadium?", options:["Leicester City","Nottingham Forest","Southampton","Brighton"], answer:"Leicester City"},
+{category:"Premier League", q:"Which club plays home games at St James' Park?", options:["Newcastle United","Sunderland","Middlesbrough","Leeds United"], answer:"Newcastle United"},
+{category:"Premier League", q:"How many Premier League titles has Manchester City won since 2011-12?", options:["8","6","10","4"], answer:"8"},
+{category:"Premier League", q:"Which club won the Premier League in its very first season, 1992-93?", options:["Manchester United","Blackburn Rovers","Arsenal","Leeds United"], answer:"Manchester United"},
+{category:"Premier League", q:"Which club famously won the Premier League as huge underdogs in the 2015-16 season?", options:["Leicester City","Burnley","Wigan Athletic","Stoke City"], answer:"Leicester City"},
+{category:"World Football", q:"Which country won the very first FIFA World Cup in 1930?", options:["Uruguay","Brazil","Argentina","Italy"], answer:"Uruguay"},
+{category:"World Football", q:"Which country has won the World Cup 4 times, tied for second-most?", options:["Germany","Argentina","Italy","France"], answer:"Germany"},
+{category:"World Football", q:"Which country has also won the World Cup 4 times?", options:["Italy","France","Spain","England"], answer:"Italy"},
+{category:"World Football", q:"How many times has England won the World Cup?", options:["1","0","2","3"], answer:"1"},
+{category:"World Football", q:"In which year did England win the World Cup?", options:["1966","1970","1958","1990"], answer:"1966"},
+{category:"World Football", q:"Which club is nicknamed 'the Blaugrana' because of their blue and red shirts?", options:["Barcelona","Real Madrid","Atletico Madrid","Valencia"], answer:"Barcelona"},
+{category:"World Football", q:"Which club plays its home games at the Camp Nou?", options:["Barcelona","Real Madrid","Atletico Madrid","Sevilla"], answer:"Barcelona"},
+{category:"World Football", q:"Which club plays its home games at the Santiago Bernabéu?", options:["Real Madrid","Barcelona","Atletico Madrid","Valencia"], answer:"Real Madrid"},
+{category:"World Football", q:"Which club plays its home games at San Siro, alongside Inter Milan?", options:["AC Milan","Juventus","Roma","Napoli"], answer:"AC Milan"},
+{category:"World Football", q:"Which club plays its home games at the Allianz Arena?", options:["Bayern Munich","Borussia Dortmund","Bayer Leverkusen","RB Leipzig"], answer:"Bayern Munich"},
+{category:"World Football", q:"Which Italian club won a surprise Serie A title in 2022-23, their first in over 30 years?", options:["Napoli","Atalanta","Sassuolo","Fiorentina"], answer:"Napoli"},
+{category:"World Football", q:"Which country is the home of football club Ajax?", options:["Netherlands","Belgium","Germany","Denmark"], answer:"Netherlands"},
+{category:"World Football", q:"Which country is the home of football club Benfica?", options:["Portugal","Spain","Brazil","Italy"], answer:"Portugal"},
+{category:"World Football", q:"Which country is the home of football club Celtic?", options:["Scotland","Ireland","England","Wales"], answer:"Scotland"},
+{category:"World Football", q:"Which country is the home of football club Rangers, Celtic's biggest rival?", options:["Scotland","England","Wales","Ireland"], answer:"Scotland"},
+{category:"World Football", q:"What is the Celtic vs Rangers match commonly called?", options:["The Old Firm derby","The Tartan Derby","The Glasgow Cup","The Highland Derby"], answer:"The Old Firm derby"},
+];
+
+const GAME_SECONDS = 60;
+const LEADERBOARD_KEY = "footballFrenzyLeaderboard";
+const LEADERBOARD_SIZE = 10;
+
+let questionQueue = [];
+let queuePos = 0;
+let correctCount = 0;
+let timeLeft = GAME_SECONDS;
+let timerHandle = null;
+let answered = false;
+let gameRunning = false;
+
+const startScreen = document.getElementById("start-screen");
+const gameScreen = document.getElementById("game-screen");
+const resultsScreen = document.getElementById("results-screen");
+const startBtn = document.getElementById("start-btn");
+const scorePillEl = document.getElementById("score-pill");
+const timerDisplay = document.getElementById("timer-display");
+const timerBar = document.getElementById("timer-bar");
+const categoryTagEl = document.getElementById("category-tag");
+const questionTextEl = document.getElementById("question-text");
+const answersEl = document.getElementById("answers");
+const feedbackEl = document.getElementById("feedback");
+const finalScoreEl = document.getElementById("final-score");
+const nameForm = document.getElementById("name-form");
+const playerNameInput = document.getElementById("player-name");
+const leaderboardBody = document.querySelector("#leaderboard tbody");
+const playAgainBtn = document.getElementById("play-again-btn");
+
+startBtn.addEventListener("click", startGame);
+playAgainBtn.addEventListener("click", () => {
+  resultsScreen.style.display = "none";
+  startScreen.style.display = "block";
+});
+nameForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = playerNameInput.value.trim();
+  if (!name) return;
+  saveScore(name, correctCount);
+  renderLeaderboard();
+  nameForm.style.display = "none";
+});
+
+function startGame() {
+  questionQueue = shuffle([...QUESTIONS]);
+  queuePos = 0;
+  correctCount = 0;
+  gameRunning = true;
+  nameForm.style.display = "flex";
+  nameForm.reset && nameForm.reset();
+
+  startScreen.style.display = "none";
+  gameScreen.style.display = "block";
+  scorePillEl.textContent = "Correct: 0";
+
+  startOverallTimer();
+  loadQuestion();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startOverallTimer() {
+  clearInterval(timerHandle);
+  timeLeft = GAME_SECONDS;
+  timerDisplay.textContent = timeLeft;
+  timerDisplay.classList.remove("warn");
+  timerBar.style.transition = "none";
+  timerBar.style.width = "100%";
+  requestAnimationFrame(() => {
+    timerBar.style.transition = `width ${GAME_SECONDS}s linear`;
+    timerBar.style.width = "0%";
+  });
+
+  timerHandle = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = Math.max(timeLeft, 0);
+    if (timeLeft <= 10) timerDisplay.classList.add("warn");
+    if (timeLeft <= 0) {
+      clearInterval(timerHandle);
+      endGame();
+    }
+  }, 1000);
+}
+
+function loadQuestion() {
+  if (!gameRunning) return;
+  answered = false;
+  feedbackEl.textContent = "";
+
+  if (queuePos >= questionQueue.length) {
+    questionQueue = shuffle([...QUESTIONS]);
+    queuePos = 0;
+  }
+  const q = questionQueue[queuePos];
+  categoryTagEl.textContent = q.category;
+  questionTextEl.textContent = q.q;
+
+  const options = shuffle([...q.options]);
+  answersEl.innerHTML = "";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "answer-btn";
+    btn.textContent = opt;
+    btn.addEventListener("click", () => handleAnswer(btn, opt, q.answer));
+    answersEl.appendChild(btn);
+  });
+}
+
+function handleAnswer(btn, chosen, correct) {
+  if (answered || !gameRunning) return;
+  answered = true;
+  Array.from(answersEl.children).forEach(b => b.disabled = true);
+
+  if (chosen === correct) {
+    btn.classList.add("correct");
+    correctCount++;
+    feedbackEl.textContent = "Correct!";
+    feedbackEl.style.color = "var(--good)";
+  } else {
+    btn.classList.add("wrong");
+    Array.from(answersEl.children).forEach(b => {
+      if (b.textContent === correct) b.classList.add("correct");
+    });
+    feedbackEl.textContent = `The answer was ${correct}.`;
+    feedbackEl.style.color = "var(--bad)";
+  }
+  scorePillEl.textContent = `Correct: ${correctCount}`;
+  queuePos++;
+  setTimeout(loadQuestion, 500);
+}
+
+function endGame() {
+  gameRunning = false;
+  gameScreen.style.display = "none";
+  resultsScreen.style.display = "block";
+  finalScoreEl.textContent = correctCount;
+  playerNameInput.value = "";
+  renderLeaderboard();
+}
+
+function getLeaderboard() {
+  try {
+    return JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveScore(name, points) {
+  const board = getLeaderboard();
+  board.push({ name, points, date: new Date().toLocaleDateString() });
+  board.sort((a, b) => b.points - a.points);
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board.slice(0, LEADERBOARD_SIZE)));
+}
+
+function renderLeaderboard() {
+  const board = getLeaderboard();
+  leaderboardBody.innerHTML = "";
+  if (board.length === 0) {
+    leaderboardBody.innerHTML = "<tr><td colspan='3'>No scores yet. Be the first!</td></tr>";
+    return;
+  }
+  const header = document.createElement("tr");
+  header.innerHTML = "<th>#</th><th>Name</th><th>Score</th>";
+  leaderboardBody.appendChild(header);
+  board.forEach((entry, i) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${i + 1}</td><td>${escapeHtml(entry.name)}</td><td>${entry.points}</td>`;
+    leaderboardBody.appendChild(row);
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
