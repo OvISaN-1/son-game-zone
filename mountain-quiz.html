@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peak Challenge — Highest Mountains</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#12203A;
+    --navy-light:#1C3153;
+    --cream:#FFF8EA;
+    --gold:#FFB84D;
+    --teal:#2EC4B6;
+    --pink:#FF6F91;
+    --ink:#152238;
+    --good:#3DCC7C;
+    --bad:#FF5D5D;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(46,196,182,0.18), transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(255,184,77,0.15), transparent 40%),
+      var(--navy);
+    font-family:'Nunito',sans-serif;
+    color:var(--cream);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:24px 16px 60px;
+  }
+  h1,h2,h3{font-family:'Baloo 2',sans-serif;margin:0;}
+  a{color:var(--gold);}
+  .top-nav{width:100%;max-width:720px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .top-nav a{text-decoration:none;font-weight:800;font-size:14px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-badge{
+    width:40px;height:40px;border-radius:50%;
+    background:conic-gradient(from 200deg, var(--teal), var(--gold), var(--pink), var(--teal));
+    box-shadow:0 0 0 3px var(--navy-light);
+  }
+  .brand h1{font-size:22px;color:var(--gold);letter-spacing:0.5px;}
+
+  .card{
+    width:100%;max-width:720px;
+    background:var(--navy-light);
+    border-radius:20px;
+    padding:24px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.35);
+    border:1px solid rgba(255,255,255,0.06);
+  }
+
+  #start-screen p{font-size:16px;line-height:1.5;color:#CBD5E8;}
+  #start-screen .rules{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0;}
+  #start-screen .rule{
+    flex:1;min-width:150px;
+    background:rgba(255,255,255,0.05);
+    border-radius:14px;
+    padding:14px;
+    text-align:center;
+  }
+  #start-screen .rule .emoji{font-size:26px;}
+  #start-screen .rule .label{font-weight:800;font-size:13px;margin-top:6px;color:var(--gold);}
+
+  input[type=text]{
+    width:100%;padding:12px 14px;border-radius:12px;border:none;
+    font-family:'Nunito',sans-serif;font-size:16px;font-weight:600;
+    background:var(--cream);color:var(--ink);
+  }
+  button{
+    font-family:'Baloo 2',sans-serif;
+    cursor:pointer;
+    border:none;
+    border-radius:14px;
+    font-weight:700;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--teal),#22A79A);
+    color:var(--navy);
+    padding:14px 22px;
+    font-size:17px;
+    width:100%;
+    margin-top:16px;
+    box-shadow:0 6px 0 #1C8F84;
+    transition:transform .05s ease;
+  }
+  .btn-primary:active{transform:translateY(4px);box-shadow:0 2px 0 #1C8F84;}
+
+  #game-screen{display:none;}
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .hud .pill{
+    background:rgba(255,255,255,0.08);
+    padding:6px 14px;border-radius:999px;font-weight:800;font-size:14px;
+  }
+  .hud .timer{
+    font-size:26px;font-weight:800;color:var(--gold);
+    min-width:60px;text-align:right;
+  }
+  .timer.warn{color:var(--bad);}
+  #timer-bar-track{height:6px;border-radius:6px;background:rgba(255,255,255,0.1);overflow:hidden;margin-bottom:18px;}
+  #timer-bar{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));width:100%;}
+
+  #peak-visual{
+    background:var(--cream);
+    border-radius:16px;
+    height:150px;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+    font-size:64px;
+  }
+
+  .prompt{text-align:center;font-size:16px;color:#CBD5E8;font-weight:700;margin-bottom:6px;line-height:1.4;}
+  .country-name{text-align:center;font-family:'Baloo 2',sans-serif;font-size:26px;color:var(--gold);margin-bottom:16px;}
+
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .answer-btn{
+    background:rgba(255,255,255,0.06);
+    color:var(--cream);
+    border:2px solid rgba(255,255,255,0.12);
+    padding:16px 10px;
+    font-size:15px;
+    text-align:center;
+  }
+  .answer-btn:hover{border-color:var(--teal);}
+  .answer-btn.correct{background:var(--good);color:var(--ink);border-color:var(--good);}
+  .answer-btn.wrong{background:var(--bad);color:#fff;border-color:var(--bad);}
+  .answer-btn:disabled{cursor:default;}
+
+  #feedback{text-align:center;font-weight:800;margin-top:14px;min-height:22px;font-size:15px;}
+
+  #results-screen{display:none;text-align:center;}
+  #results-screen .score-big{font-family:'Baloo 2',sans-serif;font-size:52px;color:var(--gold);margin:6px 0;}
+  #results-screen p{color:#CBD5E8;}
+  #name-form{display:flex;gap:10px;margin-top:18px;}
+  #name-form input{flex:1;}
+  #name-form button{padding:0 18px;background:var(--pink);color:#fff;}
+
+  table{width:100%;border-collapse:collapse;margin-top:16px;}
+  th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08);}
+  th{color:var(--gold);font-family:'Baloo 2',sans-serif;font-size:14px;}
+  td{font-weight:600;}
+  tr:first-child td{color:var(--gold);font-weight:800;}
+
+  .footer-note{font-size:12px;color:#8494B5;margin-top:24px;text-align:center;max-width:600px;}
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <div class="brand">
+    <div class="brand-badge"></div>
+    <h1>Peak Challenge</h1>
+  </div>
+  <a href="index.html">&larr; Back to games</a>
+</div>
+
+<div class="card" id="start-screen">
+  <h2>Highest mountains of the world!</h2>
+  <p>You get two kinds of question: name the highest mountain in a country, or say how tall it is. Answer as many as you can before time runs out.</p>
+  <div class="rules">
+    <div class="rule"><div class="emoji">⏱️</div><div class="label">60 seconds<br>total</div></div>
+    <div class="rule"><div class="emoji">🏔️</div><div class="label">Almost 190<br>countries</div></div>
+    <div class="rule"><div class="emoji">🏆</div><div class="label">Score = questions<br>you get right</div></div>
+  </div>
+  <button class="btn-primary" id="start-btn">Start the quiz</button>
+</div>
+
+<div class="card" id="game-screen">
+  <div class="hud">
+    <span class="pill" id="score-pill">Correct: 0</span>
+    <span class="timer" id="timer-display">60</span>
+  </div>
+  <div id="timer-bar-track"><div id="timer-bar"></div></div>
+  <div id="peak-visual">🏔️</div>
+  <div class="prompt" id="question-prompt">Question</div>
+  <div class="country-name" id="question-subject">—</div>
+  <div class="answers" id="answers"></div>
+  <div id="feedback"></div>
+</div>
+
+<div class="card" id="results-screen">
+  <h2>Time's up!</h2>
+  <p>Questions answered correctly:</p>
+  <div class="score-big" id="final-score">0</div>
+  <form id="name-form">
+    <input type="text" id="player-name" placeholder="Enter your name" maxlength="18" required>
+    <button type="submit">Save score</button>
+  </form>
+  <h3 style="margin-top:26px;">Top scores</h3>
+  <table id="leaderboard"><tbody></tbody></table>
+  <button class="btn-primary" id="play-again-btn">Play again</button>
+</div>
+
+<p class="footer-note">Heights are the officially cited elevation of each country's highest point, rounded to the nearest metre. A few disputed or shared-border peaks use the commonly cited figure. Scores save on this device only.</p>
+
+<script>
+/* ---------- Mountain data: highest point of most of the world's countries ---------- */
+/* height in metres. region is used to pick sensible wrong-answer mountain names. */
+const PEAKS = [
+{country:"France",mountain:"Mont Blanc",height:4805,region:"Europe"},
+{country:"Italy",mountain:"Mont Blanc",height:4805,region:"Europe"},
+{country:"Switzerland",mountain:"Dufourspitze (Monte Rosa)",height:4634,region:"Europe"},
+{country:"Germany",mountain:"Zugspitze",height:2962,region:"Europe"},
+{country:"Austria",mountain:"Grossglockner",height:3798,region:"Europe"},
+{country:"Spain",mountain:"Teide",height:3715,region:"Europe"},
+{country:"Portugal",mountain:"Mount Pico",height:2351,region:"Europe"},
+{country:"United Kingdom",mountain:"Ben Nevis",height:1345,region:"Europe"},
+{country:"Ireland",mountain:"Carrauntoohil",height:1038,region:"Europe"},
+{country:"Norway",mountain:"Galdhøpiggen",height:2469,region:"Europe"},
+{country:"Sweden",mountain:"Kebnekaise",height:2097,region:"Europe"},
+{country:"Finland",mountain:"Halti",height:1324,region:"Europe"},
+{country:"Denmark",mountain:"Møllehøj",height:171,region:"Europe"},
+{country:"Netherlands",mountain:"Vaalserberg",height:323,region:"Europe"},
+{country:"Belgium",mountain:"Signal de Botrange",height:694,region:"Europe"},
+{country:"Poland",mountain:"Rysy",height:2499,region:"Europe"},
+{country:"Czechia",mountain:"Sněžka",height:1603,region:"Europe"},
+{country:"Slovakia",mountain:"Gerlachovský štít",height:2655,region:"Europe"},
+{country:"Hungary",mountain:"Kékes",height:1014,region:"Europe"},
+{country:"Romania",mountain:"Moldoveanu Peak",height:2544,region:"Europe"},
+{country:"Bulgaria",mountain:"Musala",height:2925,region:"Europe"},
+{country:"Greece",mountain:"Mount Olympus",height:2917,region:"Europe"},
+{country:"Albania",mountain:"Korab",height:2764,region:"Europe"},
+{country:"North Macedonia",mountain:"Golem Korab",height:2764,region:"Europe"},
+{country:"Serbia",mountain:"Midžor",height:2169,region:"Europe"},
+{country:"Bosnia and Herzegovina",mountain:"Maglić",height:2386,region:"Europe"},
+{country:"Croatia",mountain:"Dinara",height:1831,region:"Europe"},
+{country:"Slovenia",mountain:"Triglav",height:2864,region:"Europe"},
+{country:"Montenegro",mountain:"Zla Kolata",height:2534,region:"Europe"},
+{country:"Iceland",mountain:"Hvannadalshnúkur",height:2110,region:"Europe"},
+{country:"Estonia",mountain:"Suur Munamägi",height:318,region:"Europe"},
+{country:"Latvia",mountain:"Gaiziņkalns",height:312,region:"Europe"},
+{country:"Lithuania",mountain:"Aukštojas Hill",height:294,region:"Europe"},
+{country:"Belarus",mountain:"Dzyarzhynskaya Hara",height:345,region:"Europe"},
+{country:"Ukraine",mountain:"Hoverla",height:2061,region:"Europe"},
+{country:"Moldova",mountain:"Bălănești Hill",height:430,region:"Europe"},
+{country:"Russia",mountain:"Mount Elbrus",height:5642,region:"Europe"},
+{country:"Cyprus",mountain:"Mount Olympus (Troodos)",height:1952,region:"Europe"},
+{country:"Malta",mountain:"Ta' Dmejrek",height:253,region:"Europe"},
+{country:"Luxembourg",mountain:"Kneiff",height:560,region:"Europe"},
+{country:"Monaco",mountain:"Chemin des Révoires",height:161,region:"Europe"},
+{country:"Liechtenstein",mountain:"Grauspitz",height:2599,region:"Europe"},
+{country:"San Marino",mountain:"Monte Titano",height:749,region:"Europe"},
+{country:"Andorra",mountain:"Coma Pedrosa",height:2942,region:"Europe"},
+{country:"China",mountain:"Mount Everest",height:8849,region:"Asia"},
+{country:"Nepal",mountain:"Mount Everest",height:8849,region:"Asia"},
+{country:"India",mountain:"Kangchenjunga",height:8586,region:"Asia"},
+{country:"Pakistan",mountain:"K2",height:8611,region:"Asia"},
+{country:"Bhutan",mountain:"Gangkhar Puensum",height:7570,region:"Asia"},
+{country:"Bangladesh",mountain:"Saka Haphong",height:1052,region:"Asia"},
+{country:"Myanmar",mountain:"Hkakabo Razi",height:5881,region:"Asia"},
+{country:"Sri Lanka",mountain:"Pidurutalagala",height:2524,region:"Asia"},
+{country:"Afghanistan",mountain:"Noshaq",height:7492,region:"Asia"},
+{country:"Iran",mountain:"Mount Damavand",height:5610,region:"Asia"},
+{country:"Iraq",mountain:"Cheekha Dar",height:3611,region:"Asia"},
+{country:"Kuwait",mountain:"Mutla Ridge",height:306,region:"Asia"},
+{country:"Saudi Arabia",mountain:"Jabal Sawda",height:3133,region:"Asia"},
+{country:"Yemen",mountain:"Jabal An-Nabi Shu'ayb",height:3666,region:"Asia"},
+{country:"Oman",mountain:"Jabal Shams",height:3009,region:"Asia"},
+{country:"United Arab Emirates",mountain:"Jabal Jais",height:1934,region:"Asia"},
+{country:"Qatar",mountain:"Qurayn Abu al Bawl",height:103,region:"Asia"},
+{country:"Bahrain",mountain:"Jabal ad Dukhan",height:134,region:"Asia"},
+{country:"Jordan",mountain:"Jabal Umm al Dami",height:1854,region:"Asia"},
+{country:"Israel",mountain:"Mount Meron",height:1208,region:"Asia"},
+{country:"Lebanon",mountain:"Qurnat as Sawda",height:3088,region:"Asia"},
+{country:"Syria",mountain:"Mount Hermon",height:2814,region:"Asia"},
+{country:"Turkey",mountain:"Mount Ararat",height:5137,region:"Asia"},
+{country:"Armenia",mountain:"Mount Aragats",height:4090,region:"Asia"},
+{country:"Azerbaijan",mountain:"Bazardüzü",height:4466,region:"Asia"},
+{country:"Georgia",mountain:"Mount Shkhara",height:5193,region:"Asia"},
+{country:"Kazakhstan",mountain:"Khan Tengri",height:7010,region:"Asia"},
+{country:"Kyrgyzstan",mountain:"Jengish Chokusu",height:7439,region:"Asia"},
+{country:"Tajikistan",mountain:"Ismoil Somoni Peak",height:7495,region:"Asia"},
+{country:"Turkmenistan",mountain:"Ayrybaba",height:3139,region:"Asia"},
+{country:"Uzbekistan",mountain:"Khazret Sultan",height:4643,region:"Asia"},
+{country:"Mongolia",mountain:"Khüiten Peak",height:4374,region:"Asia"},
+{country:"North Korea",mountain:"Paektu Mountain",height:2744,region:"Asia"},
+{country:"South Korea",mountain:"Hallasan",height:1947,region:"Asia"},
+{country:"Japan",mountain:"Mount Fuji",height:3776,region:"Asia"},
+{country:"Vietnam",mountain:"Fansipan",height:3147,region:"Asia"},
+{country:"Laos",mountain:"Phou Bia",height:2819,region:"Asia"},
+{country:"Cambodia",mountain:"Phnom Aural",height:1810,region:"Asia"},
+{country:"Thailand",mountain:"Doi Inthanon",height:2565,region:"Asia"},
+{country:"Malaysia",mountain:"Mount Kinabalu",height:4095,region:"Asia"},
+{country:"Indonesia",mountain:"Puncak Jaya",height:4884,region:"Asia"},
+{country:"Philippines",mountain:"Mount Apo",height:2954,region:"Asia"},
+{country:"Singapore",mountain:"Bukit Timah Hill",height:164,region:"Asia"},
+{country:"Brunei",mountain:"Bukit Pagon",height:1850,region:"Asia"},
+{country:"Timor-Leste",mountain:"Mount Ramelau",height:2986,region:"Asia"},
+{country:"Papua New Guinea",mountain:"Mount Wilhelm",height:4509,region:"Oceania"},
+{country:"Maldives",mountain:"Mount Villingili",height:5,region:"Asia"},
+{country:"Tanzania",mountain:"Mount Kilimanjaro",height:5895,region:"Africa"},
+{country:"Kenya",mountain:"Mount Kenya",height:5199,region:"Africa"},
+{country:"Uganda",mountain:"Margherita Peak",height:5109,region:"Africa"},
+{country:"DR Congo",mountain:"Margherita Peak",height:5109,region:"Africa"},
+{country:"Ethiopia",mountain:"Ras Dashen",height:4550,region:"Africa"},
+{country:"Eritrea",mountain:"Amba Soira",height:3018,region:"Africa"},
+{country:"Somalia",mountain:"Shimbiris",height:2416,region:"Africa"},
+{country:"South Sudan",mountain:"Kinyeti",height:3187,region:"Africa"},
+{country:"Sudan",mountain:"Jabal Marra",height:3042,region:"Africa"},
+{country:"Egypt",mountain:"Mount Catherine",height:2629,region:"Africa"},
+{country:"Libya",mountain:"Bikku Bitti",height:2267,region:"Africa"},
+{country:"Tunisia",mountain:"Jebel ech Chambi",height:1544,region:"Africa"},
+{country:"Algeria",mountain:"Mount Tahat",height:2908,region:"Africa"},
+{country:"Morocco",mountain:"Toubkal",height:4167,region:"Africa"},
+{country:"Mauritania",mountain:"Kediet ej Jill",height:915,region:"Africa"},
+{country:"Mali",mountain:"Hombori Tondo",height:1155,region:"Africa"},
+{country:"Niger",mountain:"Mont Idoukal-n-Taghès",height:2022,region:"Africa"},
+{country:"Chad",mountain:"Emi Koussi",height:3445,region:"Africa"},
+{country:"Nigeria",mountain:"Chappal Waddi",height:2419,region:"Africa"},
+{country:"Cameroon",mountain:"Mount Cameroon",height:4040,region:"Africa"},
+{country:"Central African Republic",mountain:"Mont Ngaoui",height:1420,region:"Africa"},
+{country:"Gabon",mountain:"Mont Bengoué",height:1070,region:"Africa"},
+{country:"Congo",mountain:"Mont Berongou",height:903,region:"Africa"},
+{country:"Equatorial Guinea",mountain:"Pico Basilé",height:3012,region:"Africa"},
+{country:"Ghana",mountain:"Mount Afadja",height:885,region:"Africa"},
+{country:"Ivory Coast",mountain:"Mount Nimba",height:1752,region:"Africa"},
+{country:"Guinea",mountain:"Mount Nimba",height:1752,region:"Africa"},
+{country:"Liberia",mountain:"Mount Wuteve",height:1440,region:"Africa"},
+{country:"Sierra Leone",mountain:"Mount Bintumani",height:1945,region:"Africa"},
+{country:"Senegal",mountain:"Nepen Diakha",height:648,region:"Africa"},
+{country:"Togo",mountain:"Mont Agou",height:986,region:"Africa"},
+{country:"Benin",mountain:"Mont Sokbaro",height:658,region:"Africa"},
+{country:"Burkina Faso",mountain:"Ténakourou",height:749,region:"Africa"},
+{country:"Zambia",mountain:"Mafinga Hills",height:2339,region:"Africa"},
+{country:"Zimbabwe",mountain:"Mount Nyangani",height:2592,region:"Africa"},
+{country:"Mozambique",mountain:"Monte Binga",height:2436,region:"Africa"},
+{country:"Malawi",mountain:"Sapitwa Peak",height:3002,region:"Africa"},
+{country:"Angola",mountain:"Mount Moco",height:2620,region:"Africa"},
+{country:"Namibia",mountain:"Brandberg (Königstein)",height:2606,region:"Africa"},
+{country:"Botswana",mountain:"Otse Hill",height:1494,region:"Africa"},
+{country:"South Africa",mountain:"Mafadi",height:3450,region:"Africa"},
+{country:"Lesotho",mountain:"Thabana Ntlenyana",height:3482,region:"Africa"},
+{country:"Eswatini",mountain:"Emlembe",height:1862,region:"Africa"},
+{country:"Madagascar",mountain:"Maromokotro",height:2876,region:"Africa"},
+{country:"Comoros",mountain:"Mount Karthala",height:2361,region:"Africa"},
+{country:"Seychelles",mountain:"Morne Seychellois",height:905,region:"Africa"},
+{country:"Mauritius",mountain:"Piton de la Petite Rivière Noire",height:828,region:"Africa"},
+{country:"Cape Verde",mountain:"Pico do Fogo",height:2829,region:"Africa"},
+{country:"Sao Tome and Principe",mountain:"Pico de São Tomé",height:2024,region:"Africa"},
+{country:"Djibouti",mountain:"Moussa Ali",height:2028,region:"Africa"},
+{country:"Burundi",mountain:"Mount Heha",height:2685,region:"Africa"},
+{country:"Rwanda",mountain:"Mount Karisimbi",height:4507,region:"Africa"},
+{country:"United States",mountain:"Denali",height:6190,region:"Americas"},
+{country:"Canada",mountain:"Mount Logan",height:5959,region:"Americas"},
+{country:"Mexico",mountain:"Pico de Orizaba",height:5636,region:"Americas"},
+{country:"Guatemala",mountain:"Volcán Tajumulco",height:4220,region:"Americas"},
+{country:"Belize",mountain:"Doyle's Delight",height:1124,region:"Americas"},
+{country:"Honduras",mountain:"Cerro Las Minas",height:2870,region:"Americas"},
+{country:"El Salvador",mountain:"Cerro El Pital",height:2730,region:"Americas"},
+{country:"Nicaragua",mountain:"Mogotón",height:2107,region:"Americas"},
+{country:"Costa Rica",mountain:"Cerro Chirripó",height:3820,region:"Americas"},
+{country:"Panama",mountain:"Volcán Barú",height:3474,region:"Americas"},
+{country:"Cuba",mountain:"Pico Turquino",height:1974,region:"Americas"},
+{country:"Jamaica",mountain:"Blue Mountain Peak",height:2256,region:"Americas"},
+{country:"Haiti",mountain:"Pic la Selle",height:2680,region:"Americas"},
+{country:"Dominican Republic",mountain:"Pico Duarte",height:3098,region:"Americas"},
+{country:"Bahamas",mountain:"Mount Alvernia",height:63,region:"Americas"},
+{country:"Trinidad and Tobago",mountain:"El Cerro del Aripo",height:940,region:"Americas"},
+{country:"Barbados",mountain:"Mount Hillaby",height:340,region:"Americas"},
+{country:"Colombia",mountain:"Pico Cristóbal Colón",height:5730,region:"Americas"},
+{country:"Venezuela",mountain:"Pico Bolívar",height:4978,region:"Americas"},
+{country:"Guyana",mountain:"Mount Roraima",height:2810,region:"Americas"},
+{country:"Suriname",mountain:"Julianatop",height:1286,region:"Americas"},
+{country:"Brazil",mountain:"Pico da Neblina",height:2995,region:"Americas"},
+{country:"Ecuador",mountain:"Chimborazo",height:6263,region:"Americas"},
+{country:"Peru",mountain:"Huascarán",height:6768,region:"Americas"},
+{country:"Bolivia",mountain:"Nevado Sajama",height:6542,region:"Americas"},
+{country:"Chile",mountain:"Ojos del Salado",height:6893,region:"Americas"},
+{country:"Argentina",mountain:"Aconcagua",height:6961,region:"Americas"},
+{country:"Paraguay",mountain:"Cerro Tres Kandú",height:842,region:"Americas"},
+{country:"Uruguay",mountain:"Cerro Catedral",height:514,region:"Americas"},
+{country:"Australia",mountain:"Mount Kosciuszko",height:2228,region:"Oceania"},
+{country:"New Zealand",mountain:"Aoraki / Mount Cook",height:3724,region:"Oceania"},
+{country:"Fiji",mountain:"Tomanivi",height:1324,region:"Oceania"},
+{country:"Solomon Islands",mountain:"Mount Popomanaseu",height:2335,region:"Oceania"},
+{country:"Vanuatu",mountain:"Mount Tabwemasana",height:1879,region:"Oceania"},
+{country:"Samoa",mountain:"Mount Silisili",height:1858,region:"Oceania"},
+{country:"Tonga",mountain:"Kao Island",height:1030,region:"Oceania"},
+{country:"Kiribati",mountain:"Banaba highpoint",height:81,region:"Oceania"},
+{country:"Tuvalu",mountain:"Niulakita highpoint",height:5,region:"Oceania"},
+{country:"Nauru",mountain:"Command Ridge",height:71,region:"Oceania"},
+{country:"Palau",mountain:"Mount Ngerchelchuus",height:242,region:"Oceania"},
+{country:"Marshall Islands",mountain:"Likiep highpoint",height:10,region:"Oceania"},
+{country:"Micronesia",mountain:"Nanlaud",height:782,region:"Oceania"},
+];
+
+const GAME_SECONDS = 60;
+const LEADERBOARD_KEY = "peakChallengeLeaderboard";
+const LEADERBOARD_SIZE = 10;
+
+let questionQueue = [];
+let queuePos = 0;
+let correctCount = 0;
+let timeLeft = GAME_SECONDS;
+let timerHandle = null;
+let answered = false;
+let gameRunning = false;
+
+const startScreen = document.getElementById("start-screen");
+const gameScreen = document.getElementById("game-screen");
+const resultsScreen = document.getElementById("results-screen");
+const startBtn = document.getElementById("start-btn");
+const scorePillEl = document.getElementById("score-pill");
+const timerDisplay = document.getElementById("timer-display");
+const timerBar = document.getElementById("timer-bar");
+const promptEl = document.getElementById("question-prompt");
+const subjectEl = document.getElementById("question-subject");
+const answersEl = document.getElementById("answers");
+const feedbackEl = document.getElementById("feedback");
+const finalScoreEl = document.getElementById("final-score");
+const nameForm = document.getElementById("name-form");
+const playerNameInput = document.getElementById("player-name");
+const leaderboardBody = document.querySelector("#leaderboard tbody");
+const playAgainBtn = document.getElementById("play-again-btn");
+
+startBtn.addEventListener("click", startGame);
+playAgainBtn.addEventListener("click", () => {
+  resultsScreen.style.display = "none";
+  startScreen.style.display = "block";
+});
+nameForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = playerNameInput.value.trim();
+  if (!name) return;
+  saveScore(name, correctCount);
+  renderLeaderboard();
+  nameForm.style.display = "none";
+});
+
+function startGame() {
+  questionQueue = buildQuestionQueue();
+  queuePos = 0;
+  correctCount = 0;
+  gameRunning = true;
+  nameForm.style.display = "flex";
+  nameForm.reset && nameForm.reset();
+
+  startScreen.style.display = "none";
+  gameScreen.style.display = "block";
+  scorePillEl.textContent = "Correct: 0";
+
+  startOverallTimer();
+  loadQuestion();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* Build a shuffled queue mixing both question types across every country */
+function buildQuestionQueue() {
+  const queue = [];
+  PEAKS.forEach(p => {
+    queue.push({ type: "name", peak: p });
+    queue.push({ type: "height", peak: p });
+  });
+  return shuffle(queue);
+}
+
+function startOverallTimer() {
+  clearInterval(timerHandle);
+  timeLeft = GAME_SECONDS;
+  timerDisplay.textContent = timeLeft;
+  timerDisplay.classList.remove("warn");
+  timerBar.style.transition = "none";
+  timerBar.style.width = "100%";
+  requestAnimationFrame(() => {
+    timerBar.style.transition = `width ${GAME_SECONDS}s linear`;
+    timerBar.style.width = "0%";
+  });
+
+  timerHandle = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = Math.max(timeLeft, 0);
+    if (timeLeft <= 10) timerDisplay.classList.add("warn");
+    if (timeLeft <= 0) {
+      clearInterval(timerHandle);
+      endGame();
+    }
+  }, 1000);
+}
+
+function loadQuestion() {
+  if (!gameRunning) return;
+  answered = false;
+  feedbackEl.textContent = "";
+
+  if (queuePos >= questionQueue.length) {
+    questionQueue = buildQuestionQueue();
+    queuePos = 0;
+  }
+  const q = questionQueue[queuePos];
+  const p = q.peak;
+
+  let options, correctAnswer;
+  if (q.type === "name") {
+    promptEl.textContent = "What is the highest mountain in...";
+    subjectEl.textContent = p.country;
+    correctAnswer = p.mountain;
+    options = shuffle([p.mountain, ...pickMountainDistractors(p, 3)]);
+  } else {
+    promptEl.textContent = `How tall is ${p.mountain}, the highest point in...`;
+    subjectEl.textContent = p.country;
+    correctAnswer = formatHeight(p.height);
+    options = shuffle([formatHeight(p.height), ...pickHeightDistractors(p, 3)]);
+  }
+
+  answersEl.innerHTML = "";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "answer-btn";
+    btn.textContent = opt;
+    btn.addEventListener("click", () => handleAnswer(btn, opt, correctAnswer));
+    answersEl.appendChild(btn);
+  });
+}
+
+function handleAnswer(btn, chosen, correct) {
+  if (answered || !gameRunning) return;
+  answered = true;
+  Array.from(answersEl.children).forEach(b => b.disabled = true);
+
+  if (chosen === correct) {
+    btn.classList.add("correct");
+    correctCount++;
+    feedbackEl.textContent = "Correct!";
+    feedbackEl.style.color = "var(--good)";
+  } else {
+    btn.classList.add("wrong");
+    Array.from(answersEl.children).forEach(b => {
+      if (b.textContent === correct) b.classList.add("correct");
+    });
+    feedbackEl.textContent = `The answer was ${correct}.`;
+    feedbackEl.style.color = "var(--bad)";
+  }
+  scorePillEl.textContent = `Correct: ${correctCount}`;
+  queuePos++;
+  setTimeout(loadQuestion, 500);
+}
+
+function endGame() {
+  gameRunning = false;
+  gameScreen.style.display = "none";
+  resultsScreen.style.display = "block";
+  finalScoreEl.textContent = correctCount;
+  playerNameInput.value = "";
+  renderLeaderboard();
+}
+
+function formatHeight(m) {
+  return m.toLocaleString("en-US") + " m";
+}
+
+/* Wrong mountain names: prefer same region, avoid the same mountain name (shared peaks) */
+function pickMountainDistractors(peak, count) {
+  const picks = [];
+  const sameRegion = shuffle(
+    PEAKS.filter(p => p.mountain !== peak.mountain && p.region === peak.region)
+  );
+  for (const p of sameRegion) {
+    if (picks.length >= count) break;
+    if (!picks.includes(p.mountain)) picks.push(p.mountain);
+  }
+  if (picks.length < count) {
+    const anyRegion = shuffle(PEAKS.filter(p => p.mountain !== peak.mountain));
+    for (const p of anyRegion) {
+      if (picks.length >= count) break;
+      if (!picks.includes(p.mountain)) picks.push(p.mountain);
+    }
+  }
+  return picks.slice(0, count);
+}
+
+/* Wrong heights: pick other real heights reasonably close in magnitude, formatted */
+function pickHeightDistractors(peak, count) {
+  const others = PEAKS
+    .filter(p => p.height !== peak.height)
+    .map(p => ({ h: p.height, d: Math.abs(p.height - peak.height) }))
+    .sort((a, b) => a.d - b.d);
+
+  const nearWindow = others.filter(o => o.d > 0).slice(0, 25);
+  const picked = new Set();
+  const result = [];
+  const shuffledWindow = shuffle(nearWindow);
+  for (const o of shuffledWindow) {
+    if (result.length >= count) break;
+    const label = formatHeight(o.h);
+    if (!picked.has(label) && label !== formatHeight(peak.height)) {
+      picked.add(label);
+      result.push(label);
+    }
+  }
+  return result;
+}
+
+function getLeaderboard() {
+  try {
+    return JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveScore(name, points) {
+  const board = getLeaderboard();
+  board.push({ name, points, date: new Date().toLocaleDateString() });
+  board.sort((a, b) => b.points - a.points);
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board.slice(0, LEADERBOARD_SIZE)));
+}
+
+function renderLeaderboard() {
+  const board = getLeaderboard();
+  leaderboardBody.innerHTML = "";
+  if (board.length === 0) {
+    leaderboardBody.innerHTML = "<tr><td colspan='3'>No scores yet. Be the first!</td></tr>";
+    return;
+  }
+  const header = document.createElement("tr");
+  header.innerHTML = "<th>#</th><th>Name</th><th>Score</th>";
+  leaderboardBody.appendChild(header);
+  board.forEach((entry, i) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${i + 1}</td><td>${escapeHtml(entry.name)}</td><td>${entry.points}</td>`;
+    leaderboardBody.appendChild(row);
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
