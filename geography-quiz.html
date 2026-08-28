@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capital Quest — Guess the Capital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#12203A;
+    --navy-light:#1C3153;
+    --cream:#FFF8EA;
+    --gold:#FFB84D;
+    --teal:#2EC4B6;
+    --pink:#FF6F91;
+    --ink:#152238;
+    --good:#3DCC7C;
+    --bad:#FF5D5D;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(46,196,182,0.18), transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(255,184,77,0.15), transparent 40%),
+      var(--navy);
+    font-family:'Nunito',sans-serif;
+    color:var(--cream);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:24px 16px 60px;
+  }
+  h1,h2,h3{font-family:'Baloo 2',sans-serif;margin:0;}
+  a{color:var(--gold);}
+  .top-nav{width:100%;max-width:720px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .top-nav a{text-decoration:none;font-weight:800;font-size:14px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-badge{
+    width:40px;height:40px;border-radius:50%;
+    background:conic-gradient(from 200deg, var(--teal), var(--gold), var(--pink), var(--teal));
+    box-shadow:0 0 0 3px var(--navy-light);
+  }
+  .brand h1{font-size:22px;color:var(--gold);letter-spacing:0.5px;}
+
+  .card{
+    width:100%;max-width:720px;
+    background:var(--navy-light);
+    border-radius:20px;
+    padding:24px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.35);
+    border:1px solid rgba(255,255,255,0.06);
+  }
+
+  /* start screen */
+  #start-screen p{font-size:16px;line-height:1.5;color:#CBD5E8;}
+  #start-screen .rules{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0;}
+  #start-screen .rule{
+    flex:1;min-width:150px;
+    background:rgba(255,255,255,0.05);
+    border-radius:14px;
+    padding:14px;
+    text-align:center;
+  }
+  #start-screen .rule .emoji{font-size:26px;}
+  #start-screen .rule .label{font-weight:800;font-size:13px;margin-top:6px;color:var(--gold);}
+
+  input[type=text]{
+    width:100%;padding:12px 14px;border-radius:12px;border:none;
+    font-family:'Nunito',sans-serif;font-size:16px;font-weight:600;
+    background:var(--cream);color:var(--ink);
+  }
+  button{
+    font-family:'Baloo 2',sans-serif;
+    cursor:pointer;
+    border:none;
+    border-radius:14px;
+    font-weight:700;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--teal),#22A79A);
+    color:var(--navy);
+    padding:14px 22px;
+    font-size:17px;
+    width:100%;
+    margin-top:16px;
+    box-shadow:0 6px 0 #1C8F84;
+    transition:transform .05s ease;
+  }
+  .btn-primary:active{transform:translateY(4px);box-shadow:0 2px 0 #1C8F84;}
+  .btn-primary:disabled{opacity:0.6;}
+
+  /* game screen */
+  #game-screen{display:none;}
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .hud .pill{
+    background:rgba(255,255,255,0.08);
+    padding:6px 14px;border-radius:999px;font-weight:800;font-size:14px;
+  }
+  .hud .timer{
+    font-size:26px;font-weight:800;color:var(--gold);
+    min-width:60px;text-align:right;
+  }
+  .timer.warn{color:var(--bad);}
+  #timer-bar-track{height:6px;border-radius:6px;background:rgba(255,255,255,0.1);overflow:hidden;margin-bottom:18px;}
+  #timer-bar{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));width:100%;}
+
+  .prompt{text-align:center;font-size:15px;color:#CBD5E8;font-weight:700;margin-bottom:6px;}
+  .country-name{text-align:center;font-family:'Baloo 2',sans-serif;font-size:26px;color:var(--gold);margin-bottom:12px;}
+
+  #map-box{
+    background:var(--cream);
+    border-radius:16px;
+    height:230px;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:20px;
+    overflow:hidden;
+  }
+  #map-box svg{width:100%;height:100%;}
+  .country-shape{fill:#2EC4B6;stroke:#152238;stroke-width:1.2;}
+  .capital-dot{fill:#FF6F91;stroke:#fff;stroke-width:2;}
+  .capital-pulse{fill:none;stroke:#FF6F91;stroke-width:2;opacity:0.6;}
+
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .answer-btn{
+    background:rgba(255,255,255,0.06);
+    color:var(--cream);
+    border:2px solid rgba(255,255,255,0.12);
+    padding:16px 10px;
+    font-size:16px;
+    text-align:center;
+  }
+  .answer-btn:hover{border-color:var(--teal);}
+  .answer-btn.correct{background:var(--good);color:var(--ink);border-color:var(--good);}
+  .answer-btn.wrong{background:var(--bad);color:#fff;border-color:var(--bad);}
+  .answer-btn:disabled{cursor:default;}
+
+  #feedback{text-align:center;font-weight:800;margin-top:14px;min-height:22px;font-size:15px;}
+
+  /* results */
+  #results-screen{display:none;text-align:center;}
+  #results-screen .score-big{font-family:'Baloo 2',sans-serif;font-size:52px;color:var(--gold);margin:6px 0;}
+  #results-screen p{color:#CBD5E8;}
+  #name-form{display:flex;gap:10px;margin-top:18px;}
+  #name-form input{flex:1;}
+  #name-form button{padding:0 18px;background:var(--pink);color:#fff;}
+
+  table{width:100%;border-collapse:collapse;margin-top:16px;}
+  th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08);}
+  th{color:var(--gold);font-family:'Baloo 2',sans-serif;font-size:14px;}
+  td{font-weight:600;}
+  tr:first-child td{color:var(--gold);font-weight:800;}
+
+  .footer-note{font-size:12px;color:#8494B5;margin-top:24px;text-align:center;max-width:600px;}
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <div class="brand">
+    <div class="brand-badge"></div>
+    <h1>Capital Quest</h1>
+  </div>
+  <a href="index.html">&larr; Back to games</a>
+</div>
+
+<div class="card" id="start-screen">
+  <h2>Guess the capital!</h2>
+  <p>Look at the shape. Find the dot. Pick the right capital city. Answer as many as you can before time runs out.</p>
+  <div class="rules">
+    <div class="rule"><div class="emoji">⏱️</div><div class="label">60 seconds<br>total</div></div>
+    <div class="rule"><div class="emoji">🌍</div><div class="label">Every country<br>in the world</div></div>
+    <div class="rule"><div class="emoji">🏆</div><div class="label">Score = capitals<br>you get right</div></div>
+  </div>
+  <button class="btn-primary" id="start-btn">Start the quiz</button>
+</div>
+
+<div class="card" id="game-screen">
+  <div class="hud">
+    <span class="pill" id="score-pill">Correct: 0</span>
+    <span class="timer" id="timer-display">60</span>
+  </div>
+  <div id="timer-bar-track"><div id="timer-bar"></div></div>
+  <div class="prompt">What is the capital of...</div>
+  <div class="country-name" id="country-name">—</div>
+  <div id="map-box"><svg id="map-svg" viewBox="0 0 300 230"></svg></div>
+  <div class="answers" id="answers"></div>
+  <div id="feedback"></div>
+</div>
+
+<div class="card" id="results-screen">
+  <h2>Time's up!</h2>
+  <p>Capitals answered correctly:</p>
+  <div class="score-big" id="final-score">0</div>
+  <form id="name-form">
+    <input type="text" id="player-name" placeholder="Enter your name" maxlength="18" required>
+    <button type="submit">Save score</button>
+  </form>
+  <h3 style="margin-top:26px;">Top scores</h3>
+  <table id="leaderboard"><tbody></tbody></table>
+  <button class="btn-primary" id="play-again-btn">Play again</button>
+</div>
+
+<p class="footer-note">Shapes drawn from public map data. Loads once from the internet, then stays in your browser. Wrong-answer options are real neighbouring capitals where possible. Scores save on this device only.</p>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script>
+/* ---------- Country data: every UN member state ---------- */
+/* ccn3 = ISO numeric code, used to find the shape in the world map file */
+/* cca3 = ISO alpha-3 code, used to look up neighbouring countries       */
+const COUNTRIES = [
+  {name:"Afghanistan",ccn3:"004",cca3:"AFG",capital:"Kabul",lat:34.5289,lon:69.1725,borders:["IRN","PAK","TKM","UZB","TJK","CHN"]},
+  {name:"Angola",ccn3:"024",cca3:"AGO",capital:"Luanda",lat:-8.8368,lon:13.2343,borders:["COG","COD","ZMB","NAM"]},
+  {name:"Albania",ccn3:"008",cca3:"ALB",capital:"Tirana",lat:41.3275,lon:19.8189,borders:["MNE","GRC","MKD","UNK"]},
+  {name:"Andorra",ccn3:"020",cca3:"AND",capital:"Andorra la Vella",lat:42.5078,lon:1.5211,borders:["FRA","ESP"]},
+  {name:"United Arab Emirates",ccn3:"784",cca3:"ARE",capital:"Abu Dhabi",lat:24.4648,lon:54.3618,borders:["OMN","SAU"]},
+  {name:"Argentina",ccn3:"032",cca3:"ARG",capital:"Buenos Aires",lat:-34.6051,lon:-58.4004,borders:["BOL","BRA","CHL","PRY","URY"]},
+  {name:"Armenia",ccn3:"051",cca3:"ARM",capital:"Yerevan",lat:40.182,lon:44.5146,borders:["AZE","GEO","IRN","TUR"]},
+  {name:"Antigua and Barbuda",ccn3:"028",cca3:"ATG",capital:"St. John's",lat:17.1172,lon:-61.8457,borders:[]},
+  {name:"Australia",ccn3:"036",cca3:"AUS",capital:"Canberra",lat:-35.2835,lon:149.1281,borders:[]},
+  {name:"Austria",ccn3:"040",cca3:"AUT",capital:"Vienna",lat:48.2064,lon:16.3707,borders:["CZE","DEU","HUN","ITA","LIE","SVK","SVN","CHE"]},
+  {name:"Azerbaijan",ccn3:"031",cca3:"AZE",capital:"Baku",lat:40.3777,lon:49.892,borders:["ARM","GEO","IRN","RUS","TUR"]},
+  {name:"Burundi",ccn3:"108",cca3:"BDI",capital:"Gitega",lat:-3.4271,lon:29.9246,borders:["COD","RWA","TZA"]},
+  {name:"Belgium",ccn3:"056",cca3:"BEL",capital:"Brussels",lat:50.8467,lon:4.3499,borders:["FRA","DEU","LUX","NLD"]},
+  {name:"Benin",ccn3:"204",cca3:"BEN",capital:"Porto-Novo",lat:6.4969,lon:2.6289,borders:["BFA","NER","NGA","TGO"]},
+  {name:"Burkina Faso",ccn3:"854",cca3:"BFA",capital:"Ouagadougou",lat:12.3642,lon:-1.5383,borders:["BEN","CIV","GHA","MLI","NER","TGO"]},
+  {name:"Bangladesh",ccn3:"050",cca3:"BGD",capital:"Dhaka",lat:23.7104,lon:90.4074,borders:["MMR","IND"]},
+  {name:"Bulgaria",ccn3:"100",cca3:"BGR",capital:"Sofia",lat:42.6975,lon:23.3242,borders:["GRC","MKD","ROU","SRB","TUR"]},
+  {name:"Bahrain",ccn3:"048",cca3:"BHR",capital:"Manama",lat:26.2154,lon:50.5832,borders:[]},
+  {name:"Bahamas",ccn3:"044",cca3:"BHS",capital:"Nassau",lat:25.0582,lon:-77.3431,borders:[]},
+  {name:"Bosnia and Herzegovina",ccn3:"070",cca3:"BIH",capital:"Sarajevo",lat:43.8486,lon:18.3564,borders:["HRV","MNE","SRB"]},
+  {name:"Belarus",ccn3:"112",cca3:"BLR",capital:"Minsk",lat:53.9,lon:27.5667,borders:["LVA","LTU","POL","RUS","UKR"]},
+  {name:"Belize",ccn3:"084",cca3:"BLZ",capital:"Belmopan",lat:17.25,lon:-88.7667,borders:["GTM","MEX"]},
+  {name:"Bolivia",ccn3:"068",cca3:"BOL",capital:"Sucre",lat:-19.0333,lon:-65.2627,borders:["ARG","BRA","CHL","PRY","PER"]},
+  {name:"Brazil",ccn3:"076",cca3:"BRA",capital:"Brasilia",lat:-15.7797,lon:-47.9297,borders:["ARG","BOL","COL","GUF","GUY","PRY","PER","SUR","URY","VEN"]},
+  {name:"Barbados",ccn3:"052",cca3:"BRB",capital:"Bridgetown",lat:13.1,lon:-59.6167,borders:[]},
+  {name:"Brunei",ccn3:"096",cca3:"BRN",capital:"Bandar Seri Begawan",lat:4.9403,lon:114.9481,borders:["MYS"]},
+  {name:"Bhutan",ccn3:"064",cca3:"BTN",capital:"Thimphu",lat:27.4661,lon:89.6419,borders:["CHN","IND"]},
+  {name:"Botswana",ccn3:"072",cca3:"BWA",capital:"Gaborone",lat:-24.6545,lon:25.9086,borders:["NAM","ZAF","ZMB","ZWE"]},
+  {name:"Central African Republic",ccn3:"140",cca3:"CAF",capital:"Bangui",lat:4.3612,lon:18.555,borders:["CMR","TCD","COD","COG","SSD","SDN"]},
+  {name:"Canada",ccn3:"124",cca3:"CAN",capital:"Ottawa",lat:45.4166,lon:-75.698,borders:["USA"]},
+  {name:"Switzerland",ccn3:"756",cca3:"CHE",capital:"Bern",lat:46.9481,lon:7.4474,borders:["AUT","FRA","ITA","LIE","DEU"]},
+  {name:"Chile",ccn3:"152",cca3:"CHL",capital:"Santiago",lat:-33.4569,lon:-70.6483,borders:["ARG","BOL","PER"]},
+  {name:"China",ccn3:"156",cca3:"CHN",capital:"Beijing",lat:39.9075,lon:116.3972,borders:["AFG","BTN","MMR","HKG","IND","KAZ","NPL","PRK","KGZ","LAO","MAC","MNG","PAK","RUS","TJK","VNM"]},
+  {name:"Ivory Coast",ccn3:"384",cca3:"CIV",capital:"Yamoussoukro",lat:6.8161,lon:-5.2742,borders:["BFA","GHA","GIN","LBR","MLI"]},
+  {name:"Cameroon",ccn3:"120",cca3:"CMR",capital:"Yaounde",lat:3.8667,lon:11.5167,borders:["CAF","TCD","COG","GNQ","GAB","NGA"]},
+  {name:"DR Congo",ccn3:"180",cca3:"COD",capital:"Kinshasa",lat:-4.3276,lon:15.3136,borders:["AGO","BDI","CAF","COG","RWA","SSD","TZA","UGA","ZMB"]},
+  {name:"Congo",ccn3:"178",cca3:"COG",capital:"Brazzaville",lat:-4.2658,lon:15.2832,borders:["AGO","CMR","CAF","COD","GAB"]},
+  {name:"Colombia",ccn3:"170",cca3:"COL",capital:"Bogota",lat:4.6097,lon:-74.0818,borders:["BRA","ECU","PAN","PER","VEN"]},
+  {name:"Comoros",ccn3:"174",cca3:"COM",capital:"Moroni",lat:-11.7022,lon:43.2551,borders:[]},
+  {name:"Cape Verde",ccn3:"132",cca3:"CPV",capital:"Praia",lat:14.9215,lon:-23.5087,borders:[]},
+  {name:"Costa Rica",ccn3:"188",cca3:"CRI",capital:"San Jose",lat:9.9278,lon:-84.0807,borders:["NIC","PAN"]},
+  {name:"Cuba",ccn3:"192",cca3:"CUB",capital:"Havana",lat:23.1195,lon:-82.3785,borders:[]},
+  {name:"Cyprus",ccn3:"196",cca3:"CYP",capital:"Nicosia",lat:35.1595,lon:33.3669,borders:[]},
+  {name:"Czechia",ccn3:"203",cca3:"CZE",capital:"Prague",lat:50.088,lon:14.4208,borders:["AUT","DEU","POL","SVK"]},
+  {name:"Germany",ccn3:"276",cca3:"DEU",capital:"Berlin",lat:52.5244,lon:13.4105,borders:["AUT","BEL","CZE","DNK","FRA","LUX","NLD","POL","CHE"]},
+  {name:"Djibouti",ccn3:"262",cca3:"DJI",capital:"Djibouti",lat:11.5877,lon:43.1447,borders:["ERI","ETH","SOM"]},
+  {name:"Dominica",ccn3:"212",cca3:"DMA",capital:"Roseau",lat:15.3017,lon:-61.3881,borders:[]},
+  {name:"Denmark",ccn3:"208",cca3:"DNK",capital:"Copenhagen",lat:55.6759,lon:12.5655,borders:["DEU"]},
+  {name:"Dominican Republic",ccn3:"214",cca3:"DOM",capital:"Santo Domingo",lat:18.4896,lon:-69.9018,borders:["HTI"]},
+  {name:"Algeria",ccn3:"012",cca3:"DZA",capital:"Algiers",lat:36.7525,lon:3.042,borders:["TUN","LBY","NER","ESH","MRT","MLI","MAR"]},
+  {name:"Ecuador",ccn3:"218",cca3:"ECU",capital:"Quito",lat:-0.2299,lon:-78.525,borders:["COL","PER"]},
+  {name:"Egypt",ccn3:"818",cca3:"EGY",capital:"Cairo",lat:30.0392,lon:31.2394,borders:["ISR","LBY","PSE","SDN"]},
+  {name:"Eritrea",ccn3:"232",cca3:"ERI",capital:"Asmara",lat:15.3333,lon:38.9333,borders:["DJI","ETH","SDN"]},
+  {name:"Spain",ccn3:"724",cca3:"ESP",capital:"Madrid",lat:40.4165,lon:-3.7026,borders:["AND","FRA","GIB","PRT","MAR"]},
+  {name:"Estonia",ccn3:"233",cca3:"EST",capital:"Tallinn",lat:59.437,lon:24.7535,borders:["LVA","RUS"]},
+  {name:"Ethiopia",ccn3:"231",cca3:"ETH",capital:"Addis Ababa",lat:9.025,lon:38.7469,borders:["DJI","ERI","KEN","SOM","SSD","SDN"]},
+  {name:"Finland",ccn3:"246",cca3:"FIN",capital:"Helsinki",lat:60.1692,lon:24.9402,borders:["NOR","SWE","RUS"]},
+  {name:"Fiji",ccn3:"242",cca3:"FJI",capital:"Suva",lat:-18.1416,lon:178.4415,borders:[]},
+  {name:"France",ccn3:"250",cca3:"FRA",capital:"Paris",lat:48.8534,lon:2.3488,borders:["AND","BEL","DEU","ITA","LUX","MCO","ESP","CHE"]},
+  {name:"Micronesia",ccn3:"583",cca3:"FSM",capital:"Palikir",lat:6.9174,lon:158.1588,borders:[]},
+  {name:"Gabon",ccn3:"266",cca3:"GAB",capital:"Libreville",lat:0.3925,lon:9.4537,borders:["CMR","COG","GNQ"]},
+  {name:"United Kingdom",ccn3:"826",cca3:"GBR",capital:"London",lat:51.5085,lon:-0.1257,borders:["IRL"]},
+  {name:"Georgia",ccn3:"268",cca3:"GEO",capital:"Tbilisi",lat:41.6941,lon:44.8337,borders:["ARM","AZE","RUS","TUR"]},
+  {name:"Ghana",ccn3:"288",cca3:"GHA",capital:"Accra",lat:5.556,lon:-0.1969,borders:["BFA","CIV","TGO"]},
+  {name:"Guinea",ccn3:"324",cca3:"GIN",capital:"Conakry",lat:9.5716,lon:-13.6476,borders:["CIV","GNB","LBR","MLI","SEN","SLE"]},
+  {name:"Gambia",ccn3:"270",cca3:"GMB",capital:"Banjul",lat:13.4531,lon:-16.6794,borders:["SEN"]},
+  {name:"Guinea-Bissau",ccn3:"624",cca3:"GNB",capital:"Bissau",lat:11.8636,lon:-15.5977,borders:["GIN","SEN"]},
+  {name:"Equatorial Guinea",ccn3:"226",cca3:"GNQ",capital:"Malabo",lat:3.75,lon:8.7833,borders:["CMR","GAB"]},
+  {name:"Greece",ccn3:"300",cca3:"GRC",capital:"Athens",lat:37.9534,lon:23.749,borders:["ALB","BGR","TUR","MKD"]},
+  {name:"Grenada",ccn3:"308",cca3:"GRD",capital:"St. George's",lat:12.0564,lon:-61.7485,borders:[]},
+  {name:"Guatemala",ccn3:"320",cca3:"GTM",capital:"Guatemala City",lat:14.6127,lon:-90.5307,borders:["BLZ","SLV","HND","MEX"]},
+  {name:"Guyana",ccn3:"328",cca3:"GUY",capital:"Georgetown",lat:6.8045,lon:-58.1553,borders:["BRA","SUR","VEN"]},
+  {name:"Honduras",ccn3:"340",cca3:"HND",capital:"Tegucigalpa",lat:14.0818,lon:-87.2068,borders:["GTM","SLV","NIC"]},
+  {name:"Croatia",ccn3:"191",cca3:"HRV",capital:"Zagreb",lat:45.8144,lon:15.978,borders:["BIH","HUN","MNE","SRB","SVN"]},
+  {name:"Haiti",ccn3:"332",cca3:"HTI",capital:"Port-au-Prince",lat:18.5392,lon:-72.335,borders:["DOM"]},
+  {name:"Hungary",ccn3:"348",cca3:"HUN",capital:"Budapest",lat:47.498,lon:19.0399,borders:["AUT","HRV","ROU","SRB","SVK","SVN","UKR"]},
+  {name:"Indonesia",ccn3:"360",cca3:"IDN",capital:"Jakarta",lat:-6.2118,lon:106.8416,borders:["TLS","MYS","PNG"]},
+  {name:"India",ccn3:"356",cca3:"IND",capital:"New Delhi",lat:28.6667,lon:77.2167,borders:["BGD","BTN","MMR","CHN","NPL","PAK"]},
+  {name:"Ireland",ccn3:"372",cca3:"IRL",capital:"Dublin",lat:53.3331,lon:-6.2489,borders:["GBR"]},
+  {name:"Iran",ccn3:"364",cca3:"IRN",capital:"Tehran",lat:35.6944,lon:51.4215,borders:["AFG","ARM","AZE","IRQ","PAK","TUR","TKM"]},
+  {name:"Iraq",ccn3:"368",cca3:"IRQ",capital:"Baghdad",lat:33.3406,lon:44.4009,borders:["IRN","JOR","KWT","SAU","SYR","TUR"]},
+  {name:"Iceland",ccn3:"352",cca3:"ISL",capital:"Reykjavik",lat:64.1355,lon:-21.8954,borders:[]},
+  {name:"Israel",ccn3:"376",cca3:"ISR",capital:"Jerusalem",lat:31.769,lon:35.2163,borders:["EGY","JOR","LBN","PSE","SYR"]},
+  {name:"Italy",ccn3:"380",cca3:"ITA",capital:"Rome",lat:41.8947,lon:12.4811,borders:["AUT","FRA","SMR","SVN","CHE","VAT"]},
+  {name:"Jamaica",ccn3:"388",cca3:"JAM",capital:"Kingston",lat:17.997,lon:-76.7936,borders:[]},
+  {name:"Jordan",ccn3:"400",cca3:"JOR",capital:"Amman",lat:31.9552,lon:35.945,borders:["IRQ","ISR","PSE","SAU","SYR"]},
+  {name:"Japan",ccn3:"392",cca3:"JPN",capital:"Tokyo",lat:35.6895,lon:139.6917,borders:[]},
+  {name:"Kazakhstan",ccn3:"398",cca3:"KAZ",capital:"Astana",lat:51.1801,lon:71.446,borders:["CHN","KGZ","RUS","TKM","UZB"]},
+  {name:"Kenya",ccn3:"404",cca3:"KEN",capital:"Nairobi",lat:-1.2833,lon:36.8167,borders:["ETH","SOM","SSD","TZA","UGA"]},
+  {name:"Kyrgyzstan",ccn3:"417",cca3:"KGZ",capital:"Bishkek",lat:42.87,lon:74.59,borders:["CHN","KAZ","TJK","UZB"]},
+  {name:"Cambodia",ccn3:"116",cca3:"KHM",capital:"Phnom Penh",lat:11.5625,lon:104.916,borders:["LAO","THA","VNM"]},
+  {name:"Kiribati",ccn3:"296",cca3:"KIR",capital:"Tarawa",lat:1.3272,lon:172.9813,borders:[]},
+  {name:"Saint Kitts and Nevis",ccn3:"659",cca3:"KNA",capital:"Basseterre",lat:17.2948,lon:-62.7261,borders:[]},
+  {name:"South Korea",ccn3:"410",cca3:"KOR",capital:"Seoul",lat:37.5683,lon:126.9778,borders:["PRK"]},
+  {name:"Kuwait",ccn3:"414",cca3:"KWT",capital:"Kuwait City",lat:29.3697,lon:47.9783,borders:["IRQ","SAU"]},
+  {name:"Laos",ccn3:"418",cca3:"LAO",capital:"Vientiane",lat:17.9667,lon:102.6,borders:["MMR","KHM","CHN","THA","VNM"]},
+  {name:"Lebanon",ccn3:"422",cca3:"LBN",capital:"Beirut",lat:33.9,lon:35.4833,borders:["ISR","SYR"]},
+  {name:"Liberia",ccn3:"430",cca3:"LBR",capital:"Monrovia",lat:6.3005,lon:-10.7969,borders:["GIN","CIV","SLE"]},
+  {name:"Libya",ccn3:"434",cca3:"LBY",capital:"Tripoli",lat:32.8752,lon:13.1875,borders:["DZA","TCD","EGY","NER","SDN","TUN"]},
+  {name:"Saint Lucia",ccn3:"662",cca3:"LCA",capital:"Castries",lat:14.006,lon:-60.991,borders:[]},
+  {name:"Liechtenstein",ccn3:"438",cca3:"LIE",capital:"Vaduz",lat:47.1415,lon:9.5215,borders:["AUT","CHE"]},
+  {name:"Sri Lanka",ccn3:"144",cca3:"LKA",capital:"Colombo",lat:6.9319,lon:79.8478,borders:["IND"]},
+  {name:"Lesotho",ccn3:"426",cca3:"LSO",capital:"Maseru",lat:-29.3167,lon:27.4833,borders:["ZAF"]},
+  {name:"Lithuania",ccn3:"440",cca3:"LTU",capital:"Vilnius",lat:54.6892,lon:25.2798,borders:["BLR","LVA","POL","RUS"]},
+  {name:"Luxembourg",ccn3:"442",cca3:"LUX",capital:"Luxembourg",lat:49.6117,lon:6.13,borders:["BEL","FRA","DEU"]},
+  {name:"Latvia",ccn3:"428",cca3:"LVA",capital:"Riga",lat:56.946,lon:24.1059,borders:["BLR","EST","LTU","RUS"]},
+  {name:"Morocco",ccn3:"504",cca3:"MAR",capital:"Rabat",lat:34.0133,lon:-6.8326,borders:["DZA","ESH","ESP"]},
+  {name:"Monaco",ccn3:"492",cca3:"MCO",capital:"Monaco",lat:43.7333,lon:7.4167,borders:["FRA"]},
+  {name:"Moldova",ccn3:"498",cca3:"MDA",capital:"Chisinau",lat:47.0056,lon:28.8575,borders:["ROU","UKR"]},
+  {name:"Madagascar",ccn3:"450",cca3:"MDG",capital:"Antananarivo",lat:-18.9137,lon:47.5361,borders:[]},
+  {name:"Maldives",ccn3:"462",cca3:"MDV",capital:"Male",lat:4.1748,lon:73.5089,borders:[]},
+  {name:"Mexico",ccn3:"484",cca3:"MEX",capital:"Mexico City",lat:19.4273,lon:-99.1419,borders:["BLZ","GTM","USA"]},
+  {name:"Marshall Islands",ccn3:"584",cca3:"MHL",capital:"Majuro",lat:7.0897,lon:171.3803,borders:[]},
+  {name:"North Macedonia",ccn3:"807",cca3:"MKD",capital:"Skopje",lat:42,lon:21.4333,borders:["ALB","BGR","GRC","UNK","SRB"]},
+  {name:"Mali",ccn3:"466",cca3:"MLI",capital:"Bamako",lat:12.65,lon:-8,borders:["DZA","BFA","GIN","CIV","MRT","NER","SEN"]},
+  {name:"Malta",ccn3:"470",cca3:"MLT",capital:"Valletta",lat:35.8997,lon:14.5147,borders:[]},
+  {name:"Myanmar",ccn3:"104",cca3:"MMR",capital:"Naypyidaw",lat:19.745,lon:96.1297,borders:["BGD","CHN","IND","LAO","THA"]},
+  {name:"Montenegro",ccn3:"499",cca3:"MNE",capital:"Podgorica",lat:42.4411,lon:19.2636,borders:["ALB","BIH","HRV","UNK","SRB"]},
+  {name:"Mongolia",ccn3:"496",cca3:"MNG",capital:"Ulaanbaatar",lat:47.9077,lon:106.8832,borders:["CHN","RUS"]},
+  {name:"Mozambique",ccn3:"508",cca3:"MOZ",capital:"Maputo",lat:-25.9653,lon:32.5892,borders:["MWI","ZAF","SWZ","TZA","ZMB","ZWE"]},
+  {name:"Mauritania",ccn3:"478",cca3:"MRT",capital:"Nouakchott",lat:18.0858,lon:-15.9785,borders:["DZA","MLI","SEN","ESH"]},
+  {name:"Mauritius",ccn3:"480",cca3:"MUS",capital:"Port Louis",lat:-20.1619,lon:57.4989,borders:[]},
+  {name:"Malawi",ccn3:"454",cca3:"MWI",capital:"Lilongwe",lat:-13.9669,lon:33.7873,borders:["MOZ","TZA","ZMB"]},
+  {name:"Malaysia",ccn3:"458",cca3:"MYS",capital:"Kuala Lumpur",lat:3.1412,lon:101.6865,borders:["BRN","IDN","THA"]},
+  {name:"Namibia",ccn3:"516",cca3:"NAM",capital:"Windhoek",lat:-22.5594,lon:17.0832,borders:["AGO","BWA","ZAF","ZMB"]},
+  {name:"Niger",ccn3:"562",cca3:"NER",capital:"Niamey",lat:13.5137,lon:2.1098,borders:["DZA","BEN","BFA","TCD","LBY","MLI","NGA"]},
+  {name:"Nigeria",ccn3:"566",cca3:"NGA",capital:"Abuja",lat:9.0574,lon:7.4898,borders:["BEN","CMR","TCD","NER"]},
+  {name:"Nicaragua",ccn3:"558",cca3:"NIC",capital:"Managua",lat:12.1328,lon:-86.2504,borders:["CRI","HND"]},
+  {name:"Netherlands",ccn3:"528",cca3:"NLD",capital:"Amsterdam",lat:52.374,lon:4.8897,borders:["BEL","DEU"]},
+  {name:"Norway",ccn3:"578",cca3:"NOR",capital:"Oslo",lat:59.9127,lon:10.7461,borders:["FIN","SWE","RUS"]},
+  {name:"Nepal",ccn3:"524",cca3:"NPL",capital:"Kathmandu",lat:27.7017,lon:85.3206,borders:["CHN","IND"]},
+  {name:"Nauru",ccn3:"520",cca3:"NRU",capital:"Yaren",lat:-0.5477,lon:166.9209,borders:[]},
+  {name:"New Zealand",ccn3:"554",cca3:"NZL",capital:"Wellington",lat:-41.2866,lon:174.7756,borders:[]},
+  {name:"Oman",ccn3:"512",cca3:"OMN",capital:"Muscat",lat:23.6139,lon:58.5922,borders:["SAU","ARE","YEM"]},
+  {name:"Pakistan",ccn3:"586",cca3:"PAK",capital:"Islamabad",lat:33.7035,lon:73.0594,borders:["AFG","CHN","IND","IRN"]},
+  {name:"Panama",ccn3:"591",cca3:"PAN",capital:"Panama City",lat:8.9958,lon:-79.5196,borders:["COL","CRI"]},
+  {name:"Peru",ccn3:"604",cca3:"PER",capital:"Lima",lat:-12.0432,lon:-77.0282,borders:["BOL","BRA","CHL","COL","ECU"]},
+  {name:"Philippines",ccn3:"608",cca3:"PHL",capital:"Manila",lat:14.6042,lon:120.9822,borders:[]},
+  {name:"Palau",ccn3:"585",cca3:"PLW",capital:"Ngerulmud",lat:7.5006,lon:134.6242,borders:[]},
+  {name:"Papua New Guinea",ccn3:"598",cca3:"PNG",capital:"Port Moresby",lat:-9.4431,lon:147.1797,borders:["IDN"]},
+  {name:"Poland",ccn3:"616",cca3:"POL",capital:"Warsaw",lat:52.2298,lon:21.0118,borders:["BLR","CZE","DEU","LTU","RUS","SVK","UKR"]},
+  {name:"North Korea",ccn3:"408",cca3:"PRK",capital:"Pyongyang",lat:39.0339,lon:125.7543,borders:["CHN","KOR","RUS"]},
+  {name:"Portugal",ccn3:"620",cca3:"PRT",capital:"Lisbon",lat:38.7169,lon:-9.1399,borders:["ESP"]},
+  {name:"Paraguay",ccn3:"600",cca3:"PRY",capital:"Asuncion",lat:-25.3007,lon:-57.6359,borders:["ARG","BOL","BRA"]},
+  {name:"Qatar",ccn3:"634",cca3:"QAT",capital:"Doha",lat:25.2747,lon:51.5245,borders:["SAU"]},
+  {name:"Romania",ccn3:"642",cca3:"ROU",capital:"Bucharest",lat:44.4328,lon:26.1043,borders:["BGR","HUN","MDA","SRB","UKR"]},
+  {name:"Russia",ccn3:"643",cca3:"RUS",capital:"Moscow",lat:55.755,lon:37.6218,borders:["AZE","BLR","CHN","EST","FIN","GEO","KAZ","PRK","LVA","LTU","MNG","NOR","POL","UKR"]},
+  {name:"Rwanda",ccn3:"646",cca3:"RWA",capital:"Kigali",lat:-1.9474,lon:30.0579,borders:["BDI","COD","TZA","UGA"]},
+  {name:"Saudi Arabia",ccn3:"682",cca3:"SAU",capital:"Riyadh",lat:24.6905,lon:46.7096,borders:["IRQ","JOR","KWT","OMN","QAT","ARE","YEM"]},
+  {name:"Sudan",ccn3:"729",cca3:"SDN",capital:"Khartoum",lat:15.5518,lon:32.5324,borders:["CAF","TCD","EGY","ERI","ETH","LBY","SSD"]},
+  {name:"Senegal",ccn3:"686",cca3:"SEN",capital:"Dakar",lat:14.6937,lon:-17.4441,borders:["GMB","GIN","GNB","MLI","MRT"]},
+  {name:"Singapore",ccn3:"702",cca3:"SGP",capital:"Singapore",lat:1.2897,lon:103.8501,borders:[]},
+  {name:"Solomon Islands",ccn3:"090",cca3:"SLB",capital:"Honiara",lat:-9.4333,lon:159.95,borders:[]},
+  {name:"Sierra Leone",ccn3:"694",cca3:"SLE",capital:"Freetown",lat:8.484,lon:-13.2299,borders:["GIN","LBR"]},
+  {name:"El Salvador",ccn3:"222",cca3:"SLV",capital:"San Salvador",lat:13.6894,lon:-89.1872,borders:["GTM","HND"]},
+  {name:"San Marino",ccn3:"674",cca3:"SMR",capital:"San Marino",lat:43.9333,lon:12.45,borders:["ITA"]},
+  {name:"Somalia",ccn3:"706",cca3:"SOM",capital:"Mogadishu",lat:2.0416,lon:45.3435,borders:["DJI","ETH","KEN"]},
+  {name:"Serbia",ccn3:"688",cca3:"SRB",capital:"Belgrade",lat:44.8176,lon:20.4633,borders:["BIH","BGR","HRV","HUN","UNK","MKD","MNE","ROU"]},
+  {name:"South Sudan",ccn3:"728",cca3:"SSD",capital:"Juba",lat:4.8517,lon:31.5825,borders:["CAF","COD","ETH","KEN","SDN","UGA"]},
+  {name:"Sao Tome and Principe",ccn3:"678",cca3:"STP",capital:"Sao Tome",lat:0.3365,lon:6.7273,borders:[]},
+  {name:"Suriname",ccn3:"740",cca3:"SUR",capital:"Paramaribo",lat:5.8664,lon:-55.1668,borders:["BRA","GUF","GUY"]},
+  {name:"Slovakia",ccn3:"703",cca3:"SVK",capital:"Bratislava",lat:48.1482,lon:17.1067,borders:["AUT","CZE","HUN","POL","UKR"]},
+  {name:"Slovenia",ccn3:"705",cca3:"SVN",capital:"Ljubljana",lat:46.0511,lon:14.5051,borders:["AUT","HRV","ITA","HUN"]},
+  {name:"Sweden",ccn3:"752",cca3:"SWE",capital:"Stockholm",lat:59.3326,lon:18.0649,borders:["FIN","NOR"]},
+  {name:"Eswatini",ccn3:"748",cca3:"SWZ",capital:"Mbabane",lat:-26.3167,lon:31.1333,borders:["MOZ","ZAF"]},
+  {name:"Seychelles",ccn3:"690",cca3:"SYC",capital:"Victoria",lat:-4.6167,lon:55.45,borders:[]},
+  {name:"Syria",ccn3:"760",cca3:"SYR",capital:"Damascus",lat:33.5086,lon:36.3084,borders:["IRQ","ISR","JOR","LBN","TUR"]},
+  {name:"Chad",ccn3:"148",cca3:"TCD",capital:"N'Djamena",lat:12.1067,lon:15.0444,borders:["CMR","CAF","LBY","NER","NGA","SDN"]},
+  {name:"Togo",ccn3:"768",cca3:"TGO",capital:"Lome",lat:6.1375,lon:1.2123,borders:["BEN","BFA","GHA"]},
+  {name:"Thailand",ccn3:"764",cca3:"THA",capital:"Bangkok",lat:13.722,lon:100.5252,borders:["MMR","KHM","LAO","MYS"]},
+  {name:"Tajikistan",ccn3:"762",cca3:"TJK",capital:"Dushanbe",lat:38.5358,lon:68.7791,borders:["AFG","CHN","KGZ","UZB"]},
+  {name:"Turkmenistan",ccn3:"795",cca3:"TKM",capital:"Ashgabat",lat:37.95,lon:58.3833,borders:["AFG","IRN","KAZ","UZB"]},
+  {name:"Timor-Leste",ccn3:"626",cca3:"TLS",capital:"Dili",lat:-8.5601,lon:125.5668,borders:["IDN"]},
+  {name:"Tonga",ccn3:"776",cca3:"TON",capital:"Nuku'alofa",lat:-21.1394,lon:-175.2032,borders:[]},
+  {name:"Trinidad and Tobago",ccn3:"780",cca3:"TTO",capital:"Port of Spain",lat:10.6662,lon:-61.5166,borders:[]},
+  {name:"Tunisia",ccn3:"788",cca3:"TUN",capital:"Tunis",lat:36.819,lon:10.1658,borders:["DZA","LBY"]},
+  {name:"Turkey",ccn3:"792",cca3:"TUR",capital:"Ankara",lat:39.9199,lon:32.8543,borders:["ARM","AZE","BGR","GEO","GRC","IRN","IRQ","SYR"]},
+  {name:"Tuvalu",ccn3:"798",cca3:"TUV",capital:"Funafuti",lat:-8.5189,lon:179.1991,borders:[]},
+  {name:"Tanzania",ccn3:"834",cca3:"TZA",capital:"Dodoma",lat:-6.1722,lon:35.7395,borders:["BDI","COD","KEN","MWI","MOZ","RWA","UGA","ZMB"]},
+  {name:"Uganda",ccn3:"800",cca3:"UGA",capital:"Kampala",lat:0.3163,lon:32.5822,borders:["COD","KEN","RWA","SSD","TZA"]},
+  {name:"Ukraine",ccn3:"804",cca3:"UKR",capital:"Kyiv",lat:50.4454,lon:30.5186,borders:["BLR","HUN","MDA","POL","ROU","RUS","SVK"]},
+  {name:"Uruguay",ccn3:"858",cca3:"URY",capital:"Montevideo",lat:-34.8335,lon:-56.1674,borders:["ARG","BRA"]},
+  {name:"United States",ccn3:"840",cca3:"USA",capital:"Washington D.C.",lat:38.8951,lon:-77.0364,borders:["CAN","MEX"]},
+  {name:"Uzbekistan",ccn3:"860",cca3:"UZB",capital:"Tashkent",lat:41.2647,lon:69.2163,borders:["AFG","KAZ","KGZ","TJK","TKM"]},
+  {name:"Vatican City",ccn3:"336",cca3:"VAT",capital:"Vatican City",lat:41.9024,lon:12.4533,borders:["ITA"]},
+  {name:"Saint Vincent and the Grenadines",ccn3:"670",cca3:"VCT",capital:"Kingstown",lat:13.1587,lon:-61.2248,borders:[]},
+  {name:"Venezuela",ccn3:"862",cca3:"VEN",capital:"Caracas",lat:10.488,lon:-66.8792,borders:["BRA","COL","GUY"]},
+  {name:"Vietnam",ccn3:"704",cca3:"VNM",capital:"Hanoi",lat:21.0245,lon:105.8412,borders:["KHM","CHN","LAO"]},
+  {name:"Vanuatu",ccn3:"548",cca3:"VUT",capital:"Port Vila",lat:-17.7338,lon:168.3219,borders:[]},
+  {name:"Samoa",ccn3:"882",cca3:"WSM",capital:"Apia",lat:-13.8333,lon:-171.7667,borders:[]},
+  {name:"Yemen",ccn3:"887",cca3:"YEM",capital:"Sanaa",lat:15.3531,lon:44.2078,borders:["OMN","SAU"]},
+  {name:"South Africa",ccn3:"710",cca3:"ZAF",capital:"Pretoria",lat:-25.7461,lon:28.1881,borders:["BWA","LSO","MOZ","NAM","SWZ","ZWE"]},
+  {name:"Zambia",ccn3:"894",cca3:"ZMB",capital:"Lusaka",lat:-15.4134,lon:28.2771,borders:["AGO","BWA","COD","MWI","MOZ","NAM","TZA","ZWE"]},
+  {name:"Zimbabwe",ccn3:"716",cca3:"ZWE",capital:"Harare",lat:-17.8294,lon:31.0539,borders:["BWA","MOZ","ZAF","ZMB"]}
+];
+
+const GAME_SECONDS = 60;
+const LEADERBOARD_KEY = "capitalQuestLeaderboard";
+const LEADERBOARD_SIZE = 10;
+
+const byCca3 = {};
+COUNTRIES.forEach(c => byCca3[c.cca3] = c);
+
+let worldTopology = null;
+let quizPool = [];      // countries with a matching shape in the map data
+let questionQueue = [];
+let queuePos = 0;
+let correctCount = 0;
+let timeLeft = GAME_SECONDS;
+let timerHandle = null;
+let answered = false;
+let gameRunning = false;
+
+const startScreen = document.getElementById("start-screen");
+const gameScreen = document.getElementById("game-screen");
+const resultsScreen = document.getElementById("results-screen");
+const startBtn = document.getElementById("start-btn");
+const scorePillEl = document.getElementById("score-pill");
+const timerDisplay = document.getElementById("timer-display");
+const timerBar = document.getElementById("timer-bar");
+const countryNameEl = document.getElementById("country-name");
+const answersEl = document.getElementById("answers");
+const feedbackEl = document.getElementById("feedback");
+const finalScoreEl = document.getElementById("final-score");
+const nameForm = document.getElementById("name-form");
+const playerNameInput = document.getElementById("player-name");
+const leaderboardBody = document.querySelector("#leaderboard tbody");
+const playAgainBtn = document.getElementById("play-again-btn");
+
+/* ---------- Setup ---------- */
+startBtn.addEventListener("click", startGame);
+playAgainBtn.addEventListener("click", () => {
+  resultsScreen.style.display = "none";
+  startScreen.style.display = "block";
+});
+nameForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = playerNameInput.value.trim();
+  if (!name) return;
+  saveScore(name, correctCount);
+  renderLeaderboard();
+  nameForm.style.display = "none";
+});
+
+async function startGame() {
+  startBtn.disabled = true;
+  startBtn.textContent = "Loading map...";
+  if (!worldTopology) {
+    const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json");
+    worldTopology = await res.json();
+    const features = topojson.feature(worldTopology, worldTopology.objects.countries).features;
+    const idsPresent = new Set(features.map(f => Number(f.id)));
+    quizPool = COUNTRIES.filter(c => c.ccn3 && idsPresent.has(Number(c.ccn3)));
+  }
+  startBtn.disabled = false;
+  startBtn.textContent = "Start the quiz";
+
+  questionQueue = shuffle([...quizPool]);
+  queuePos = 0;
+  correctCount = 0;
+  gameRunning = true;
+  nameForm.style.display = "flex";
+  nameForm.reset && nameForm.reset();
+
+  startScreen.style.display = "none";
+  gameScreen.style.display = "block";
+  scorePillEl.textContent = `Correct: 0`;
+
+  startOverallTimer();
+  loadQuestion();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ---------- Overall 60-second timer ---------- */
+function startOverallTimer() {
+  clearInterval(timerHandle);
+  timeLeft = GAME_SECONDS;
+  timerDisplay.textContent = timeLeft;
+  timerDisplay.classList.remove("warn");
+  timerBar.style.transition = "none";
+  timerBar.style.width = "100%";
+  requestAnimationFrame(() => {
+    timerBar.style.transition = `width ${GAME_SECONDS}s linear`;
+    timerBar.style.width = "0%";
+  });
+
+  timerHandle = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = Math.max(timeLeft, 0);
+    if (timeLeft <= 10) timerDisplay.classList.add("warn");
+    if (timeLeft <= 0) {
+      clearInterval(timerHandle);
+      endGame();
+    }
+  }, 1000);
+}
+
+/* ---------- Question flow (rapid-fire, no per-question timer) ---------- */
+function loadQuestion() {
+  if (!gameRunning) return;
+  answered = false;
+  feedbackEl.textContent = "";
+
+  if (queuePos >= questionQueue.length) {
+    questionQueue = shuffle([...quizPool]); // recycle if someone is very fast
+    queuePos = 0;
+  }
+  const q = questionQueue[queuePos];
+  countryNameEl.textContent = q.name;
+  drawCountryShape(q);
+
+  const distractors = pickDistractorCapitals(q, 3);
+  const options = shuffle([q.capital, ...distractors]);
+  answersEl.innerHTML = "";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "answer-btn";
+    btn.textContent = opt;
+    btn.addEventListener("click", () => handleAnswer(btn, opt, q.capital));
+    answersEl.appendChild(btn);
+  });
+}
+
+function handleAnswer(btn, chosen, correct) {
+  if (answered || !gameRunning) return;
+  answered = true;
+  Array.from(answersEl.children).forEach(b => b.disabled = true);
+
+  if (chosen === correct) {
+    btn.classList.add("correct");
+    correctCount++;
+    feedbackEl.textContent = "Correct!";
+    feedbackEl.style.color = "var(--good)";
+  } else {
+    btn.classList.add("wrong");
+    Array.from(answersEl.children).forEach(b => {
+      if (b.textContent === correct) b.classList.add("correct");
+    });
+    feedbackEl.textContent = `The answer was ${correct}.`;
+    feedbackEl.style.color = "var(--bad)";
+  }
+  scorePillEl.textContent = `Correct: ${correctCount}`;
+  queuePos++;
+  setTimeout(loadQuestion, 500);
+}
+
+function endGame() {
+  gameRunning = false;
+  gameScreen.style.display = "none";
+  resultsScreen.style.display = "block";
+  finalScoreEl.textContent = correctCount;
+  playerNameInput.value = "";
+  renderLeaderboard();
+}
+
+/* ---------- Neighbour-based distractor capitals ---------- */
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function pickDistractorCapitals(country, count) {
+  const chosen = [];
+  const usedCca3 = new Set([country.cca3]);
+
+  // Step 1: real bordering countries, in random order
+  const borderCountries = shuffle(
+    (country.borders || [])
+      .map(code => byCca3[code])
+      .filter(Boolean)
+  );
+  for (const b of borderCountries) {
+    if (chosen.length >= count) break;
+    chosen.push(b.capital);
+    usedCca3.add(b.cca3);
+  }
+
+  // Step 2: fall back to the nearest remaining countries by distance
+  if (chosen.length < count) {
+    const rest = COUNTRIES
+      .filter(c => !usedCca3.has(c.cca3))
+      .map(c => ({ c, d: haversine(country.lat, country.lon, c.lat, c.lon) }))
+      .sort((a, b) => a.d - b.d);
+    for (const { c } of rest) {
+      if (chosen.length >= count) break;
+      chosen.push(c.capital);
+      usedCca3.add(c.cca3);
+    }
+  }
+  return chosen;
+}
+
+/* ---------- Map drawing ---------- */
+function drawCountryShape(q) {
+  const svg = document.getElementById("map-svg");
+  svg.innerHTML = "";
+  if (!worldTopology) return;
+
+  const countries = topojson.feature(worldTopology, worldTopology.objects.countries);
+  const feature = countries.features.find(f => Number(f.id) === Number(q.ccn3));
+  if (!feature) return;
+
+  const width = 300, height = 230;
+  const projection = d3.geoMercator().fitSize([width - 20, height - 20], feature);
+  projection.translate([
+    projection.translate()[0] + 10,
+    projection.translate()[1] + 10
+  ]);
+  const path = d3.geoPath(projection);
+
+  const ns = "http://www.w3.org/2000/svg";
+  const pathEl = document.createElementNS(ns, "path");
+  pathEl.setAttribute("d", path(feature));
+  pathEl.setAttribute("class", "country-shape");
+  svg.appendChild(pathEl);
+
+  const [cx, cy] = projection([q.lon, q.lat]);
+  const pulse = document.createElementNS(ns, "circle");
+  pulse.setAttribute("cx", cx);
+  pulse.setAttribute("cy", cy);
+  pulse.setAttribute("r", 8);
+  pulse.setAttribute("class", "capital-pulse");
+  svg.appendChild(pulse);
+
+  const dot = document.createElementNS(ns, "circle");
+  dot.setAttribute("cx", cx);
+  dot.setAttribute("cy", cy);
+  dot.setAttribute("r", 4);
+  dot.setAttribute("class", "capital-dot");
+  svg.appendChild(dot);
+}
+
+/* ---------- Leaderboard (saved in this browser only) ---------- */
+function getLeaderboard() {
+  try {
+    return JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveScore(name, points) {
+  const board = getLeaderboard();
+  board.push({ name, points, date: new Date().toLocaleDateString() });
+  board.sort((a, b) => b.points - a.points);
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board.slice(0, LEADERBOARD_SIZE)));
+}
+
+function renderLeaderboard() {
+  const board = getLeaderboard();
+  leaderboardBody.innerHTML = "";
+  if (board.length === 0) {
+    leaderboardBody.innerHTML = "<tr><td colspan='3'>No scores yet. Be the first!</td></tr>";
+    return;
+  }
+  const header = document.createElement("tr");
+  header.innerHTML = "<th>#</th><th>Name</th><th>Score</th>";
+  leaderboardBody.appendChild(header);
+  board.forEach((entry, i) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${i + 1}</td><td>${escapeHtml(entry.name)}</td><td>${entry.points}</td>`;
+    leaderboardBody.appendChild(row);
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
