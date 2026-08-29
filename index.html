@@ -143,7 +143,7 @@
   }
 
   .zone{
-    width:100%;max-width:820px;margin-top:42px;
+    width:100%;max-width:820px;margin-top:34px;
     background:var(--navy-light);
     border-radius:20px;padding:22px 24px;
     border:1px solid rgba(255,255,255,0.06);
@@ -151,6 +151,64 @@
   }
   .zone h2{font-family:'Baloo 2',sans-serif;font-size:20px;color:var(--gold);margin:0 0 4px;}
   .zone .zone-sub{font-size:13px;color:#8494B5;margin:0 0 14px;}
+  .zone + .zone{margin-top:20px;}
+
+  .keepy-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+  .keepy-header h2{margin:0;}
+  .keepy-best{
+    background:rgba(255,184,77,0.12);border:1px solid rgba(255,184,77,0.3);
+    padding:5px 12px;border-radius:999px;font-weight:800;font-size:13px;color:var(--cream);
+    white-space:nowrap;
+  }
+  .keepy-best span{color:var(--gold);}
+  .keepy-stage{
+    position:relative;
+    height:260px;
+    margin-top:14px;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(46,196,182,0.25), transparent 55%),
+      var(--cream);
+    border-radius:16px;
+    overflow:hidden;
+    cursor:pointer;
+    touch-action:none;
+    user-select:none;
+  }
+  .keepy-score{
+    position:absolute;top:10px;left:14px;
+    font-family:'Baloo 2',sans-serif;font-size:30px;color:#152238;
+    z-index:2;
+  }
+  .keepy-ball{
+    position:absolute;
+    width:44px;height:44px;
+    font-size:38px;line-height:44px;text-align:center;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:1;
+  }
+  .keepy-ground{
+    position:absolute;left:0;right:0;bottom:0;height:10px;
+    background:repeating-linear-gradient(90deg, rgba(21,34,56,0.18) 0 14px, transparent 14px 28px);
+    border-top:2px dashed rgba(21,34,56,0.25);
+  }
+  .keepy-overlay{
+    position:absolute;inset:0;
+    background:rgba(18,32,58,0.6);
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:12px;
+    z-index:3;
+    text-align:center;
+    padding:20px;
+  }
+  .keepy-overlay p{color:var(--cream);font-weight:800;font-family:'Baloo 2',sans-serif;font-size:18px;margin:0;}
+  .keepy-overlay .btn-primary{
+    font-family:'Baloo 2',sans-serif;cursor:pointer;border:none;border-radius:14px;font-weight:700;
+    background:linear-gradient(135deg,var(--teal),#22A79A);color:var(--navy);
+    padding:13px 26px;font-size:16px;box-shadow:0 6px 0 #1C8F84;
+  }
+  .keepy-overlay .btn-primary:active{transform:translateY(3px);box-shadow:0 2px 0 #1C8F84;}
+  .keepy-overlay.hidden{display:none;}
 
   footer.made-with{
     margin-top:36px;
@@ -179,6 +237,24 @@
     <div class="tagline">🏆 Your very own game zone 🏆</div>
     <div class="aka">aka <span>ClawsTiger</span> 🐯 &middot; <span>MiniDragon</span> 🐉 &middot; <span>GeoSon</span> ⚡</div>
   </div>
+
+  <div class="zone">
+    <div class="keepy-header">
+      <h2>⚽ Keepy-Uppy Break</h2>
+      <div class="keepy-best">Best: <span id="keepy-best">0</span></div>
+    </div>
+    <p class="zone-sub">Tap the ball to keep it up. Don't let it hit the ground! A bit of fun before you pick a quiz.</p>
+    <div class="keepy-stage" id="keepy-stage">
+      <div class="keepy-score" id="keepy-score">0</div>
+      <div class="keepy-ball" id="keepy-ball">⚽</div>
+      <div class="keepy-ground"></div>
+      <div class="keepy-overlay" id="keepy-overlay">
+        <p>Tap the ball to start!</p>
+        <button class="btn-primary" id="keepy-start-btn">Start</button>
+      </div>
+    </div>
+  </div>
+
   <div class="grid">
     <a class="game-card" href="geography-quiz.html">
       <div class="emoji">🌍</div>
@@ -210,12 +286,109 @@
     <div class="gz-badges-grid" id="badges-grid"></div>
   </div>
 
+  <div class="zone">
+    <h2>📊 Best Scores</h2>
+    <p class="zone-sub">Your personal bests across all three games.</p>
+    <div id="best-scores-chart"></div>
+  </div>
+
   <footer class="made-with">Built with <span class="heart">&hearts;</span> by Dad, for GeoSon</footer>
 
 <script src="stats.js"></script>
 <script>
   GZ.renderStreak(document.getElementById("streak-banner"));
   GZ.renderBadgesGrid(document.getElementById("badges-grid"));
+  GZ.renderBestScores(document.getElementById("best-scores-chart"));
+
+  /* ---------- Keepy-uppy mini game ---------- */
+  (function () {
+    const stage = document.getElementById("keepy-stage");
+    const ballEl = document.getElementById("keepy-ball");
+    const scoreEl = document.getElementById("keepy-score");
+    const bestEl = document.getElementById("keepy-best");
+    const overlay = document.getElementById("keepy-overlay");
+
+    const GROUND_H = 10;
+    const BALL_SIZE = 44;
+    const GRAVITY = 0.18;
+    const KICK_VELOCITY = -6.2;
+    const HIT_PAD = 32; // generous hit box so it's easy for a 10-year-old to connect
+
+    let y = 0, vy = 0, running = false, score = 0, rafId = null;
+
+    function stageHeight() { return stage.clientHeight || 260; }
+
+    function resetBall() {
+      y = stageHeight() / 2 - BALL_SIZE / 2;
+      vy = 0;
+      ballEl.style.top = y + "px";
+    }
+
+    bestEl.textContent = GZ.load().keepyUppyBest || 0;
+    resetBall();
+
+    function startGame() {
+      score = 0;
+      scoreEl.textContent = "0";
+      resetBall();
+      running = true;
+      overlay.classList.add("hidden");
+      cancelAnimationFrame(rafId);
+      tick();
+    }
+
+    function tick() {
+      if (!running) return;
+      vy += GRAVITY;
+      y += vy;
+      if (y <= 2) {
+        y = 2;
+        vy = Math.max(vy, 0);
+      }
+      const maxY = stageHeight() - GROUND_H - BALL_SIZE;
+      if (y >= maxY) {
+        y = maxY;
+        ballEl.style.top = y + "px";
+        gameOver();
+        return;
+      }
+      ballEl.style.top = y + "px";
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function gameOver() {
+      running = false;
+      cancelAnimationFrame(rafId);
+      const nickname = GZ.randomNickname();
+      const { isNewBest, newBadges } = GZ.recordKeepyUppy(score);
+      bestEl.textContent = GZ.load().keepyUppyBest || 0;
+      GZ.renderBestScores(document.getElementById("best-scores-chart"));
+      overlay.innerHTML = `
+        <p>${isNewBest && score > 0 ? "New best! " : ""}${score} keepy-upp${score === 1 ? "y" : "ies"}, ${nickname}!</p>
+        <button class="btn-primary" id="keepy-start-btn">Play again</button>
+      `;
+      overlay.classList.remove("hidden");
+      document.getElementById("keepy-start-btn").addEventListener("click", startGame);
+      GZ.announceBadges(newBadges);
+    }
+
+    function tryKick(clientX, clientY) {
+      if (!running) return;
+      const rect = stage.getBoundingClientRect();
+      const px = clientX - rect.left;
+      const py = clientY - rect.top;
+      const ballCenterX = rect.width / 2;
+      const ballCenterY = y + BALL_SIZE / 2;
+      if (Math.abs(px - ballCenterX) <= BALL_SIZE / 2 + HIT_PAD && Math.abs(py - ballCenterY) <= BALL_SIZE / 2 + HIT_PAD) {
+        vy = KICK_VELOCITY;
+        score++;
+        scoreEl.textContent = score;
+      }
+    }
+
+    stage.addEventListener("pointerdown", (e) => tryKick(e.clientX, e.clientY));
+    document.getElementById("keepy-start-btn").addEventListener("click", startGame);
+  })();
 </script>
 </body>
 </html>

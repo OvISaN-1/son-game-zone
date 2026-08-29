@@ -18,12 +18,14 @@
     { id: "quickfire-king",    emoji: "⚡", name: "Quickfire King",  desc: "Score 15 or more correct in one round" },
     { id: "three-day-streak",  emoji: "🔥", name: "On Fire",         desc: "Play on 3 days in a row" },
     { id: "all-rounder",       emoji: "🌟", name: "All-Rounder",     desc: "Play all three games at least once" },
+    { id: "keepy-uppy-king",   emoji: "🤹", name: "Keepy-Uppy King", desc: "Get 25 keepy-uppies in one go" },
   ];
 
   function defaultStats() {
     return {
       gamesPlayed: { "football-frenzy": 0, "capital-quest": 0, "mountain-peaks": 0 },
       bestScore:   { "football-frenzy": 0, "capital-quest": 0, "mountain-peaks": 0 },
+      keepyUppyBest: 0,
       badges: [],
       streak: 0,
       lastPlayed: null,
@@ -105,6 +107,28 @@
     };
   }
 
+  function recordKeepyUppy(score) {
+    const s = load();
+    const isNewBest = score > (s.keepyUppyBest || 0);
+    if (isNewBest) s.keepyUppyBest = score;
+
+    const newlyAwarded = [];
+    function award(id) {
+      if (!s.badges.includes(id)) {
+        s.badges.push(id);
+        newlyAwarded.push(id);
+      }
+    }
+    if (score >= 25) award("keepy-uppy-king");
+
+    save(s);
+    return {
+      stats: s,
+      isNewBest,
+      newBadges: newlyAwarded.map(id => BADGES.find(b => b.id === id)).filter(Boolean)
+    };
+  }
+
   function randomNickname() {
     return NICKNAMES[Math.floor(Math.random() * NICKNAMES.length)];
   }
@@ -173,6 +197,30 @@
     container.innerHTML = html;
   }
 
+  function renderBestScores(container) {
+    if (!container) return;
+    const s = load();
+    const games = [
+      { id: "football-frenzy", label: "Football Frenzy", emoji: "⚽" },
+      { id: "capital-quest", label: "Capital Quest", emoji: "🌍" },
+      { id: "mountain-peaks", label: "Peak Challenge", emoji: "🏔️" }
+    ];
+    const scale = 30; // nominal "great score" ceiling for the bar fill
+    let html = '<div class="gz-chart">';
+    games.forEach(g => {
+      const best = s.bestScore[g.id] || 0;
+      const pct = Math.max(best > 0 ? 6 : 0, Math.min(100, Math.round((best / scale) * 100)));
+      html += `
+        <div class="gz-chart-row">
+          <div class="gz-chart-label">${g.emoji} ${escapeHtml(g.label)}</div>
+          <div class="gz-chart-track"><div class="gz-chart-fill" style="width:${pct}%"></div></div>
+          <div class="gz-chart-value">${best}</div>
+        </div>`;
+    });
+    html += "</div>";
+    container.innerHTML = html;
+  }
+
   function renderStreak(container) {
     if (!container) return;
     const s = load();
@@ -184,11 +232,13 @@
 
   GZ.load = load;
   GZ.recordResult = recordResult;
+  GZ.recordKeepyUppy = recordKeepyUppy;
   GZ.randomNickname = randomNickname;
   GZ.showToast = showToast;
   GZ.announceBadges = announceBadges;
   GZ.renderCategoryChart = renderCategoryChart;
   GZ.renderBadgesGrid = renderBadgesGrid;
+  GZ.renderBestScores = renderBestScores;
   GZ.renderStreak = renderStreak;
   GZ.BADGES = BADGES;
   GZ.NICKNAMES = NICKNAMES;
