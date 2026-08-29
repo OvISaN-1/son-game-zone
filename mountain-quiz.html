@@ -389,8 +389,16 @@ const PEAKS = [
 ];
 
 const GAME_SECONDS = 60;
-const LEADERBOARD_KEY = "peakChallengeLeaderboard";
 const LEADERBOARD_SIZE = 10;
+
+/* ================= SUPABASE CONFIG =================
+   Paste your Supabase project URL and anon public key below.
+   Find them in Supabase: Settings -> API.
+   This is the SAME URL and key in all three game files. */
+const SUPABASE_URL = "https://hucnucpfyjltlhmvprso.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1Y251Y3BmeWpsdGxobXZwcnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDgzNjEsImV4cCI6MjEwMzU4NDM2MX0.DSjLCkiUWB47wVd4wnW_2RvWFoISbH80JI9ukB1bBdg";
+const GAME_ID = "mountain-peaks";
+/* ==================================================== */
 
 let questionQueue = [];
 let queuePos = 0;
@@ -422,12 +430,12 @@ playAgainBtn.addEventListener("click", () => {
   resultsScreen.style.display = "none";
   startScreen.style.display = "block";
 });
-nameForm.addEventListener("submit", (e) => {
+nameForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = playerNameInput.value.trim();
   if (!name) return;
-  saveScore(name, correctCount);
-  renderLeaderboard();
+  await saveScore(name, correctCount);
+  await renderLeaderboard();
   nameForm.style.display = "none";
 });
 
@@ -602,23 +610,55 @@ function pickHeightDistractors(peak, count) {
   return result;
 }
 
-function getLeaderboard() {
+function isSupabaseConfigured() {
+  return SUPABASE_URL && SUPABASE_ANON_KEY &&
+    !SUPABASE_URL.includes("PASTE_YOUR") && !SUPABASE_ANON_KEY.includes("PASTE_YOUR");
+}
+
+async function getLeaderboard() {
+  if (!isSupabaseConfigured()) return [];
   try {
-    return JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || [];
-  } catch {
+    const url = `${SUPABASE_URL}/rest/v1/leaderboard?game=eq.${GAME_ID}&select=player_name,score&order=score.desc&limit=${LEADERBOARD_SIZE}`;
+    const res = await fetch(url, {
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.map(r => ({ name: r.player_name, points: r.score }));
+  } catch (e) {
+    console.error("Could not load leaderboard", e);
     return [];
   }
 }
 
-function saveScore(name, points) {
-  const board = getLeaderboard();
-  board.push({ name, points, date: new Date().toLocaleDateString() });
-  board.sort((a, b) => b.points - a.points);
-  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board.slice(0, LEADERBOARD_SIZE)));
+async function saveScore(name, points) {
+  if (!isSupabaseConfigured()) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({ game: GAME_ID, player_name: name, score: points })
+    });
+  } catch (e) {
+    console.error("Could not save score", e);
+  }
 }
 
-function renderLeaderboard() {
-  const board = getLeaderboard();
+async function renderLeaderboard() {
+  if (!isSupabaseConfigured()) {
+    leaderboardBody.innerHTML = "<tr><td colspan='3'>Leaderboard not set up yet.</td></tr>";
+    return;
+  }
+  leaderboardBody.innerHTML = "<tr><td colspan='3'>Loading top scores...</td></tr>";
+  const board = await getLeaderboard();
   leaderboardBody.innerHTML = "";
   if (board.length === 0) {
     leaderboardBody.innerHTML = "<tr><td colspan='3'>No scores yet. Be the first!</td></tr>";
