@@ -248,6 +248,15 @@
   }
   .fact-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #b8395f;}
 
+  .champ-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .champ-row:last-child{border-bottom:none;}
+  .champ-emoji{font-size:24px;width:30px;text-align:center;flex-shrink:0;}
+  .champ-game{font-size:12px;font-weight:800;color:#8494B5;text-transform:uppercase;letter-spacing:.3px;}
+  .champ-name{font-family:'Baloo 2',sans-serif;font-size:16px;color:var(--cream);}
+  .champ-name .crown{margin-right:4px;}
+  .champ-score{margin-left:auto;font-family:'Baloo 2',sans-serif;font-size:22px;color:var(--gold);flex-shrink:0;}
+  .champ-empty{color:#8494B5;font-size:13px;}
+
   .keepy-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
   .keepy-header h2{margin:0;}
   .keepy-best{
@@ -409,9 +418,9 @@
   </div>
 
   <div class="zone">
-    <h2>📊 Best Scores</h2>
-    <p class="zone-sub">Your personal bests across all three games.</p>
-    <div id="best-scores-chart"></div>
+    <h2>📊 Top Scores</h2>
+    <p class="zone-sub">The current champion of each game, straight from the leaderboard.</p>
+    <div id="best-scores-chart">Loading top scores...</div>
   </div>
 
   <footer class="made-with">Built with <span class="heart">&hearts;</span> by Dad, for GeoSon</footer>
@@ -420,7 +429,67 @@
 <script>
   GZ.renderStreak(document.getElementById("streak-banner"));
   GZ.renderBadgesGrid(document.getElementById("badges-grid"));
-  GZ.renderBestScores(document.getElementById("best-scores-chart"));
+
+  /* ---------- Top scores, live from the Supabase leaderboard ---------- */
+  (function () {
+    /* Same Supabase project used by all three quiz pages. */
+    const SUPABASE_URL = "https://hucnucpfyjltlhmvprso.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1Y251Y3BmeWpsdGxobXZwcnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDgzNjEsImV4cCI6MjEwMzU4NDM2MX0.DSjLCkiUWB47wVd4wnW_2RvWFoISbH80JI9ukB1bBdg";
+
+    const GAMES = [
+      { id: "football-frenzy", label: "Football Frenzy", emoji: "⚽" },
+      { id: "capital-quest", label: "Capital Quest", emoji: "🌍" },
+      { id: "mountain-peaks", label: "Peak Challenge", emoji: "🏔️" }
+    ];
+
+    const chartEl = document.getElementById("best-scores-chart");
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
+    async function fetchTopScorer(gameId) {
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/leaderboard?game=eq.${gameId}&select=player_name,score&order=score.desc&limit=1`;
+        const res = await fetch(url, {
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data.length) return null;
+        return { name: data[0].player_name, score: data[0].score };
+      } catch (e) {
+        console.error("Could not load top scorer for", gameId, e);
+        return null;
+      }
+    }
+
+    async function renderTopScores() {
+      const results = await Promise.all(GAMES.map(g => fetchTopScorer(g.id)));
+      let html = "";
+      GAMES.forEach((g, i) => {
+        const top = results[i];
+        html += `<div class="champ-row">
+          <div class="champ-emoji">${g.emoji}</div>
+          <div>
+            <div class="champ-game">${escapeHtml(g.label)}</div>
+            ${top
+              ? `<div class="champ-name"><span class="crown">👑</span>${escapeHtml(top.name)}</div>`
+              : `<div class="champ-empty">No scores yet — be the first!</div>`}
+          </div>
+          ${top ? `<div class="champ-score">${top.score}</div>` : ""}
+        </div>`;
+      });
+      chartEl.innerHTML = html;
+    }
+
+    renderTopScores();
+  })();
 
   /* ---------- Did You Know? fun facts ---------- */
   (function () {
@@ -544,7 +613,6 @@
       const nickname = GZ.randomNickname();
       const { isNewBest, newBadges } = GZ.recordKeepyUppy(score);
       bestEl.textContent = GZ.load().keepyUppyBest || 0;
-      GZ.renderBestScores(document.getElementById("best-scores-chart"));
       overlay.innerHTML = `
         <p>${isNewBest && score > 0 ? "New best! " : ""}${score} keepy-upp${score === 1 ? "y" : "ies"}, ${nickname}!</p>
         <button class="btn-primary" id="keepy-start-btn">Play again</button>
