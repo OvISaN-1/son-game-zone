@@ -6,6 +6,7 @@
 <title>Football Frenzy — Football Knowledge Quiz</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stats.css">
 <style>
   :root{
     --navy:#12203A;
@@ -17,6 +18,7 @@
     --ink:#152238;
     --good:#3DCC7C;
     --bad:#FF5D5D;
+    --forest:#DD0000;
   }
   *{box-sizing:border-box;}
   body{
@@ -44,6 +46,12 @@
     box-shadow:0 0 0 3px var(--navy-light);
   }
   .brand h1{font-size:22px;color:var(--gold);letter-spacing:0.5px;}
+  .forest-chip{
+    background:linear-gradient(135deg,var(--forest),#8f0000);
+    color:#fff;font-size:11px;font-weight:800;
+    padding:5px 10px;border-radius:999px;letter-spacing:.3px;
+    box-shadow:0 4px 10px rgba(221,0,0,0.3);
+  }
 
   .card{
     width:100%;max-width:720px;
@@ -65,6 +73,7 @@
   }
   #start-screen .rule .emoji{font-size:26px;}
   #start-screen .rule .label{font-weight:800;font-size:13px;margin-top:6px;color:var(--gold);}
+  #start-greeting{font-family:'Baloo 2',sans-serif;font-size:17px;color:var(--gold);margin-bottom:6px;}
 
   input[type=text]{
     width:100%;padding:12px 14px;border-radius:12px;border:none;
@@ -146,6 +155,9 @@
   #results-screen{display:none;text-align:center;}
   #results-screen .score-big{font-family:'Baloo 2',sans-serif;font-size:52px;color:var(--gold);margin:6px 0;}
   #results-screen p{color:#CBD5E8;}
+  #results-message{font-family:'Baloo 2',sans-serif;font-size:17px;color:var(--cream);margin-top:2px;}
+  #category-breakdown{text-align:left;margin-top:22px;}
+  #category-breakdown h3{text-align:center;}
   #name-form{display:flex;gap:10px;margin-top:18px;}
   #name-form input{flex:1;}
   #name-form button{padding:0 18px;background:var(--pink);color:#fff;}
@@ -165,11 +177,13 @@
   <div class="brand">
     <div class="brand-badge"></div>
     <h1>Football Frenzy</h1>
+    <span class="forest-chip">🌳 NFFC</span>
   </div>
   <a href="index.html">&larr; Back to games</a>
 </div>
 
 <div class="card" id="start-screen">
+  <div id="start-greeting"></div>
   <h2>Football knowledge quiz!</h2>
   <p>Legends, Premier League, Champions League, and the world's top clubs. Answer as many as you can before time runs out.</p>
   <div class="rules">
@@ -197,6 +211,11 @@
   <h2>Full time!</h2>
   <p>Questions answered correctly:</p>
   <div class="score-big" id="final-score">0</div>
+  <div id="results-message"></div>
+  <div id="category-breakdown">
+    <h3 style="margin-top:22px;">How you did, by category</h3>
+    <div id="category-chart"></div>
+  </div>
   <form id="name-form">
     <input type="text" id="player-name" placeholder="Enter your name" maxlength="18" required>
     <button type="submit">Save score</button>
@@ -208,6 +227,7 @@
 
 <p class="footer-note">Records like title counts and goal-scoring records are current as of mid-2026 and will go out of date as new seasons are played. Scores save on this device only.</p>
 
+<script src="stats.js"></script>
 <script>
 /* ---------- Question bank ---------- */
 /* Each question: category, q (question text), options (4), answer (must match one option exactly) */
@@ -440,6 +460,13 @@ const QUESTIONS = [
 {category:"World Football", q:"Which country is the home of football club Celtic?", options:["Scotland","Ireland","England","Wales"], answer:"Scotland"},
 {category:"World Football", q:"Which country is the home of football club Rangers, Celtic's biggest rival?", options:["Scotland","England","Wales","Ireland"], answer:"Scotland"},
 {category:"World Football", q:"What is the Celtic vs Rangers match commonly called?", options:["The Old Firm derby","The Tartan Derby","The Glasgow Cup","The Highland Derby"], answer:"The Old Firm derby"},
+
+// ===== FOREST CORNER (a little bonus for the reds) =====
+{category:"Forest Corner", q:"What is Nottingham Forest's nickname?", options:["The Tricky Trees","The Reds","The Foresters","The Garibaldis"], answer:"The Tricky Trees"},
+{category:"Forest Corner", q:"What is Nottingham Forest's home stadium called?", options:["The City Ground","Trent Bridge","The County Ground","Meadow Lane"], answer:"The City Ground"},
+{category:"Forest Corner", q:"How many European Cups did Nottingham Forest win in a row, in 1979 and 1980?", options:["2","1","3","4"], answer:"2"},
+{category:"Forest Corner", q:"What colour shirts does Nottingham Forest play in?", options:["Red","Blue","Green","Black and white stripes"], answer:"Red"},
+{category:"Forest Corner", q:"What does Cristiano Ronaldo shout when he does his famous jumping celebration?", options:["SIUUU","GOOOAL","VAMOS","OLE"], answer:"SIUUU"},
 ];
 
 const GAME_SECONDS = 60;
@@ -457,10 +484,12 @@ const GAME_ID = "football-frenzy";
 let questionQueue = [];
 let queuePos = 0;
 let correctCount = 0;
+let answeredCount = 0;
 let timeLeft = GAME_SECONDS;
 let timerHandle = null;
 let answered = false;
 let gameRunning = false;
+let categoryStats = {};
 
 const startScreen = document.getElementById("start-screen");
 const gameScreen = document.getElementById("game-screen");
@@ -478,11 +507,17 @@ const nameForm = document.getElementById("name-form");
 const playerNameInput = document.getElementById("player-name");
 const leaderboardBody = document.querySelector("#leaderboard tbody");
 const playAgainBtn = document.getElementById("play-again-btn");
+const startGreetingEl = document.getElementById("start-greeting");
+const resultsMessageEl = document.getElementById("results-message");
+const categoryChartEl = document.getElementById("category-chart");
+
+if (startGreetingEl) startGreetingEl.textContent = `Ready, ${GZ.randomNickname()}? ⚽`;
 
 startBtn.addEventListener("click", startGame);
 playAgainBtn.addEventListener("click", () => {
   resultsScreen.style.display = "none";
   startScreen.style.display = "block";
+  if (startGreetingEl) startGreetingEl.textContent = `Go again, ${GZ.randomNickname()}? ⚽`;
 });
 nameForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -497,6 +532,8 @@ function startGame() {
   questionQueue = shuffle([...QUESTIONS]);
   queuePos = 0;
   correctCount = 0;
+  answeredCount = 0;
+  categoryStats = {};
   gameRunning = true;
   nameForm.style.display = "flex";
   nameForm.reset && nameForm.reset();
@@ -570,9 +607,15 @@ function handleAnswer(btn, chosen, correct) {
   answered = true;
   Array.from(answersEl.children).forEach(b => b.disabled = true);
 
+  const cat = categoryTagEl.textContent;
+  if (!categoryStats[cat]) categoryStats[cat] = { correct: 0, total: 0 };
+  categoryStats[cat].total++;
+  answeredCount++;
+
   if (chosen === correct) {
     btn.classList.add("correct");
     correctCount++;
+    categoryStats[cat].correct++;
     feedbackEl.textContent = "Correct!";
     feedbackEl.style.color = "var(--good)";
   } else {
@@ -588,12 +631,27 @@ function handleAnswer(btn, chosen, correct) {
   setTimeout(loadQuestion, 500);
 }
 
+function resultsMessageFor(nickname, score) {
+  if (score >= 20) return `SIUUUU! ${score} correct — unstoppable, ${nickname}! 🔴🌳`;
+  if (score >= 10) return `Great round, ${nickname}! ${score} correct — proper Tricky Trees form. 🌳`;
+  if (score >= 1) return `Nice one, ${nickname}! ${score} correct. Have another go!`;
+  return `That's alright, ${nickname} — everyone misses now and then. Try again!`;
+}
+
 function endGame() {
   gameRunning = false;
   gameScreen.style.display = "none";
   resultsScreen.style.display = "block";
   finalScoreEl.textContent = correctCount;
   playerNameInput.value = "";
+
+  const nickname = GZ.randomNickname();
+  if (resultsMessageEl) resultsMessageEl.textContent = resultsMessageFor(nickname, correctCount);
+  if (categoryChartEl) GZ.renderCategoryChart(categoryChartEl, categoryStats);
+
+  const { newBadges } = GZ.recordResult(GAME_ID, correctCount, answeredCount);
+  GZ.announceBadges(newBadges);
+
   renderLeaderboard();
 }
 

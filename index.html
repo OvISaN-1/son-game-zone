@@ -6,6 +6,7 @@
 <title>The Game Zone</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stats.css">
 <style>
   :root{
     --navy:#12203A;
@@ -14,6 +15,7 @@
     --gold:#FFB84D;
     --teal:#2EC4B6;
     --pink:#FF6F91;
+    --forest:#DD0000;
   }
   *{box-sizing:border-box;}
   body{
@@ -102,11 +104,21 @@
     font-size:13px;
     color:#8494B5;
   }
+  .aka{
+    margin-top:10px;
+    font-size:13px;
+    font-weight:800;
+    color:#CBD5E8;
+    letter-spacing:.2px;
+  }
+  .aka span{color:var(--gold);}
+
   .grid{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
     gap:20px;width:100%;max-width:820px;margin-top:34px;
   }
   .game-card{
+    position:relative;
     background:var(--navy-light);
     border-radius:18px;
     padding:22px;
@@ -114,13 +126,39 @@
     color:var(--cream);
     border:1px solid rgba(255,255,255,0.06);
     box-shadow:0 10px 24px rgba(0,0,0,0.3);
-    transition:transform .1s ease;
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
   }
-  .game-card:hover{transform:translateY(-3px);}
+  .game-card:hover{transform:translateY(-4px) scale(1.015);box-shadow:0 16px 30px rgba(0,0,0,0.4);border-color:rgba(255,184,77,0.35);}
   .game-card .emoji{font-size:36px;}
   .game-card h2{font-family:'Baloo 2',sans-serif;font-size:20px;margin:10px 0 4px;color:var(--gold);}
   .game-card p{margin:0;font-size:14px;color:#CBD5E8;}
   .game-card.coming{opacity:0.45;cursor:default;}
+  .fan-chip{
+    position:absolute;top:14px;right:14px;
+    background:linear-gradient(135deg,var(--forest),#8f0000);
+    color:#fff;font-size:10.5px;font-weight:800;
+    padding:4px 9px;border-radius:999px;
+    letter-spacing:.3px;
+    box-shadow:0 4px 10px rgba(221,0,0,0.35);
+  }
+
+  .zone{
+    width:100%;max-width:820px;margin-top:42px;
+    background:var(--navy-light);
+    border-radius:20px;padding:22px 24px;
+    border:1px solid rgba(255,255,255,0.06);
+    box-shadow:0 12px 28px rgba(0,0,0,0.3);
+  }
+  .zone h2{font-family:'Baloo 2',sans-serif;font-size:20px;color:var(--gold);margin:0 0 4px;}
+  .zone .zone-sub{font-size:13px;color:#8494B5;margin:0 0 14px;}
+
+  footer.made-with{
+    margin-top:36px;
+    text-align:center;
+    font-size:12px;
+    color:#8494B5;
+  }
+  footer.made-with .heart{color:var(--pink);}
 </style>
 </head>
 <body>
@@ -139,6 +177,7 @@
       <span class="letter">G</span><span class="letter">e</span><span class="letter">o</span><span class="letter">S</span><span class="letter">o</span><span class="letter">n</span>
     </div>
     <div class="tagline">🏆 Your very own game zone 🏆</div>
+    <div class="aka">aka <span>ClawsTiger</span> 🐯 &middot; <span>MiniDragon</span> 🐉 &middot; <span>GeoSon</span> ⚡</div>
   </div>
   <div class="grid">
     <a class="game-card" href="geography-quiz.html">
@@ -152,6 +191,7 @@
       <p>Name each country's highest mountain, and how tall it is.</p>
     </a>
     <a class="game-card" href="football-quiz.html">
+      <span class="fan-chip">🌳 NFFC</span>
       <div class="emoji">⚽</div>
       <h2>Football Frenzy</h2>
       <p>Legends, Premier League, Champions League and more.</p>
@@ -162,5 +202,20 @@
       <p>New games get added here.</p>
     </div>
   </div>
+
+  <div class="zone">
+    <h2>🏅 My Trophy Cabinet</h2>
+    <p class="zone-sub">Badges and streaks update every time you finish a game — right here on this device.</p>
+    <div class="gz-streak-banner" id="streak-banner">Play today to start a streak! 🔥</div>
+    <div class="gz-badges-grid" id="badges-grid"></div>
+  </div>
+
+  <footer class="made-with">Built with <span class="heart">&hearts;</span> by Dad, for GeoSon</footer>
+
+<script src="stats.js"></script>
+<script>
+  GZ.renderStreak(document.getElementById("streak-banner"));
+  GZ.renderBadgesGrid(document.getElementById("badges-grid"));
+</script>
 </body>
 </html>

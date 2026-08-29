@@ -6,6 +6,7 @@
 <title>Peak Challenge — Highest Mountains</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stats.css">
 <style>
   :root{
     --navy:#12203A;
@@ -65,6 +66,7 @@
   }
   #start-screen .rule .emoji{font-size:26px;}
   #start-screen .rule .label{font-weight:800;font-size:13px;margin-top:6px;color:var(--gold);}
+  #start-greeting{font-family:'Baloo 2',sans-serif;font-size:17px;color:var(--gold);margin-bottom:6px;}
 
   input[type=text]{
     width:100%;padding:12px 14px;border-radius:12px;border:none;
@@ -135,6 +137,9 @@
   #results-screen{display:none;text-align:center;}
   #results-screen .score-big{font-family:'Baloo 2',sans-serif;font-size:52px;color:var(--gold);margin:6px 0;}
   #results-screen p{color:#CBD5E8;}
+  #results-message{font-family:'Baloo 2',sans-serif;font-size:17px;color:var(--cream);margin-top:2px;}
+  #category-breakdown{text-align:left;margin-top:22px;}
+  #category-breakdown h3{text-align:center;}
   #name-form{display:flex;gap:10px;margin-top:18px;}
   #name-form input{flex:1;}
   #name-form button{padding:0 18px;background:var(--pink);color:#fff;}
@@ -159,6 +164,7 @@
 </div>
 
 <div class="card" id="start-screen">
+  <div id="start-greeting"></div>
   <h2>Highest mountains of the world!</h2>
   <p>You get two kinds of question: name the highest mountain in a country, or say how tall it is. Answer as many as you can before time runs out.</p>
   <div class="rules">
@@ -186,6 +192,11 @@
   <h2>Time's up!</h2>
   <p>Questions answered correctly:</p>
   <div class="score-big" id="final-score">0</div>
+  <div id="results-message"></div>
+  <div id="category-breakdown">
+    <h3 style="margin-top:22px;">How you did, by region</h3>
+    <div id="category-chart"></div>
+  </div>
   <form id="name-form">
     <input type="text" id="player-name" placeholder="Enter your name" maxlength="18" required>
     <button type="submit">Save score</button>
@@ -197,6 +208,7 @@
 
 <p class="footer-note">Heights are the officially cited elevation of each country's highest point, rounded to the nearest metre. A few disputed or shared-border peaks use the commonly cited figure. Scores save on this device only.</p>
 
+<script src="stats.js"></script>
 <script>
 /* ---------- Mountain data: highest point of most of the world's countries ---------- */
 /* height in metres. region is used to pick sensible wrong-answer mountain names. */
@@ -403,10 +415,13 @@ const GAME_ID = "mountain-peaks";
 let questionQueue = [];
 let queuePos = 0;
 let correctCount = 0;
+let answeredCount = 0;
 let timeLeft = GAME_SECONDS;
 let timerHandle = null;
 let answered = false;
 let gameRunning = false;
+let currentRegion = "";
+let categoryStats = {};
 
 const startScreen = document.getElementById("start-screen");
 const gameScreen = document.getElementById("game-screen");
@@ -424,11 +439,17 @@ const nameForm = document.getElementById("name-form");
 const playerNameInput = document.getElementById("player-name");
 const leaderboardBody = document.querySelector("#leaderboard tbody");
 const playAgainBtn = document.getElementById("play-again-btn");
+const startGreetingEl = document.getElementById("start-greeting");
+const resultsMessageEl = document.getElementById("results-message");
+const categoryChartEl = document.getElementById("category-chart");
+
+if (startGreetingEl) startGreetingEl.textContent = `Ready, ${GZ.randomNickname()}? 🏔️`;
 
 startBtn.addEventListener("click", startGame);
 playAgainBtn.addEventListener("click", () => {
   resultsScreen.style.display = "none";
   startScreen.style.display = "block";
+  if (startGreetingEl) startGreetingEl.textContent = `Go again, ${GZ.randomNickname()}? 🏔️`;
 });
 nameForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -443,6 +464,8 @@ function startGame() {
   questionQueue = buildQuestionQueue();
   queuePos = 0;
   correctCount = 0;
+  answeredCount = 0;
+  categoryStats = {};
   gameRunning = true;
   nameForm.style.display = "flex";
   nameForm.reset && nameForm.reset();
@@ -508,6 +531,7 @@ function loadQuestion() {
   }
   const q = questionQueue[queuePos];
   const p = q.peak;
+  currentRegion = p.region || "World";
 
   let options, correctAnswer;
   if (q.type === "name") {
@@ -537,9 +561,14 @@ function handleAnswer(btn, chosen, correct) {
   answered = true;
   Array.from(answersEl.children).forEach(b => b.disabled = true);
 
+  if (!categoryStats[currentRegion]) categoryStats[currentRegion] = { correct: 0, total: 0 };
+  categoryStats[currentRegion].total++;
+  answeredCount++;
+
   if (chosen === correct) {
     btn.classList.add("correct");
     correctCount++;
+    categoryStats[currentRegion].correct++;
     feedbackEl.textContent = "Correct!";
     feedbackEl.style.color = "var(--good)";
   } else {
@@ -555,12 +584,27 @@ function handleAnswer(btn, chosen, correct) {
   setTimeout(loadQuestion, 500);
 }
 
+function resultsMessageFor(nickname, score) {
+  if (score >= 20) return `Incredible, ${nickname}! ${score} correct — you're on top of the world! 🏔️🏆`;
+  if (score >= 10) return `Great climb, ${nickname}! ${score} correct. ⛰️`;
+  if (score >= 1) return `Nice one, ${nickname}! ${score} correct. Have another go!`;
+  return `That's alright, ${nickname} — everyone misses now and then. Try again!`;
+}
+
 function endGame() {
   gameRunning = false;
   gameScreen.style.display = "none";
   resultsScreen.style.display = "block";
   finalScoreEl.textContent = correctCount;
   playerNameInput.value = "";
+
+  const nickname = GZ.randomNickname();
+  if (resultsMessageEl) resultsMessageEl.textContent = resultsMessageFor(nickname, correctCount);
+  if (categoryChartEl) GZ.renderCategoryChart(categoryChartEl, categoryStats);
+
+  const { newBadges } = GZ.recordResult(GAME_ID, correctCount, answeredCount);
+  GZ.announceBadges(newBadges);
+
   renderLeaderboard();
 }
 
