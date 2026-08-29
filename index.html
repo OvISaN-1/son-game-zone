@@ -20,6 +20,8 @@
   *{box-sizing:border-box;}
   body{
     margin:0;min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
     background:
       radial-gradient(circle at 15% 10%, rgba(46,196,182,0.18), transparent 40%),
       radial-gradient(circle at 85% 85%, rgba(255,184,77,0.15), transparent 40%),
@@ -29,6 +31,18 @@
     display:flex;flex-direction:column;align-items:center;
     padding:40px 16px 60px;
   }
+  .blob-field{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+  .blob{position:absolute;border-radius:50%;filter:blur(50px);opacity:0.22;animation:blobDrift 22s ease-in-out infinite;}
+  .blob.b1{width:280px;height:280px;background:var(--teal);top:-60px;left:-80px;animation-duration:26s;}
+  .blob.b2{width:220px;height:220px;background:var(--pink);top:40%;right:-90px;animation-duration:20s;animation-delay:-6s;}
+  .blob.b3{width:240px;height:240px;background:var(--gold);bottom:-80px;left:20%;animation-duration:24s;animation-delay:-12s;}
+  @keyframes blobDrift{
+    0%,100%{transform:translate(0,0) scale(1);}
+    33%{transform:translate(30px,-20px) scale(1.08);}
+    66%{transform:translate(-20px,25px) scale(0.95);}
+  }
+  body > *:not(.blob-field){position:relative;z-index:1;}
+
   h1{font-family:'Baloo 2',sans-serif;font-size:34px;color:var(--gold);margin:0;}
   p.sub{color:#CBD5E8;margin-top:8px;}
 
@@ -44,18 +58,55 @@
     text-transform:uppercase;
     color:#8494B5;
   }
-  .name-stage{
+  .name-medallion{
     position:relative;
+    width:340px;
+    max-width:88vw;
+    height:170px;
+    margin:10px auto 0;
+  }
+  .glow-ring{
+    position:absolute;
+    inset:50% auto auto 50%;
+    width:220px;height:220px;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    background:conic-gradient(from 0deg, var(--teal), var(--gold), var(--pink), var(--teal));
+    filter:blur(28px);
+    opacity:0.35;
+    animation:ringSpin 7s linear infinite, ringPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes ringSpin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
+  @keyframes ringPulse{0%,100%{opacity:0.28;}50%{opacity:0.45;}}
+
+  .orbit-field{position:absolute;inset:0;pointer-events:none;}
+  .orbit-arm{position:absolute;top:50%;left:50%;width:0;height:0;animation:orbitSpin 16s linear infinite;}
+  .orbit-arm.a2{animation-delay:-4s;}
+  .orbit-arm.a3{animation-delay:-8s;}
+  .orbit-arm.a4{animation-delay:-12s;}
+  .orbit-icon{
+    position:absolute;left:82px;top:-12px;
+    font-size:22px;
+    animation:orbitCounter 16s linear infinite;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+  }
+  .orbit-arm.a2 .orbit-icon{animation-delay:-4s;}
+  .orbit-arm.a3 .orbit-icon{animation-delay:-8s;}
+  .orbit-arm.a4 .orbit-icon{animation-delay:-12s;}
+  @keyframes orbitSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  @keyframes orbitCounter{from{transform:rotate(0deg);}to{transform:rotate(-360deg);}}
+
+  .name-stage{
+    position:absolute;
+    inset:0;
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    margin-top:6px;
-    padding:6px 10px;
   }
   .name-stage .letter{
     display:inline-block;
     font-family:'Baloo 2',sans-serif;
-    font-size:52px;
+    font-size:56px;
     font-weight:800;
     line-height:1;
     background:linear-gradient(90deg,var(--teal),var(--gold),var(--pink),var(--teal));
@@ -63,8 +114,15 @@
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
+    -webkit-text-stroke:1.5px rgba(255,255,255,0.5);
     animation:bounceLetter 1.4s ease-in-out infinite, rainbowShift 5s linear infinite;
-    text-shadow:0 0 24px rgba(255,184,77,0.35);
+    text-shadow:0 0 24px rgba(255,184,77,0.45), 0 6px 0 rgba(18,32,58,0.35);
+  }
+  @media (max-width:480px){
+    .name-medallion{width:280px;height:150px;}
+    .glow-ring{width:180px;height:180px;}
+    .orbit-icon{left:62px;top:-10px;font-size:18px;}
+    .name-stage .letter{font-size:44px;}
   }
   .name-stage .letter:nth-child(1){animation-delay:0s, 0s;}
   .name-stage .letter:nth-child(2){animation-delay:.08s, 0s;}
@@ -120,19 +178,26 @@
   .game-card{
     position:relative;
     background:var(--navy-light);
-    border-radius:18px;
+    border-radius:24px;
     padding:22px;
     text-decoration:none;
     color:var(--cream);
-    border:1px solid rgba(255,255,255,0.06);
+    border:2px solid rgba(255,255,255,0.06);
     box-shadow:0 10px 24px rgba(0,0,0,0.3);
-    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease, border-color .18s ease;
   }
-  .game-card:hover{transform:translateY(-4px) scale(1.015);box-shadow:0 16px 30px rgba(0,0,0,0.4);border-color:rgba(255,184,77,0.35);}
-  .game-card .emoji{font-size:36px;}
-  .game-card h2{font-family:'Baloo 2',sans-serif;font-size:20px;margin:10px 0 4px;color:var(--gold);}
+  .game-card:hover{transform:translateY(-4px) scale(1.03) rotate(-1deg);box-shadow:0 16px 30px rgba(0,0,0,0.4);border-color:rgba(255,184,77,0.4);}
+  .game-card .emoji-badge{
+    width:56px;height:56px;border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px;
+    background:rgba(255,255,255,0.07);
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,0.06);
+  }
+  .game-card h2{font-family:'Baloo 2',sans-serif;font-size:20px;margin:12px 0 4px;color:var(--gold);}
   .game-card p{margin:0;font-size:14px;color:#CBD5E8;}
   .game-card.coming{opacity:0.45;cursor:default;}
+  .game-card.coming:hover{transform:none;}
   .fan-chip{
     position:absolute;top:14px;right:14px;
     background:linear-gradient(135deg,var(--forest),#8f0000);
@@ -145,13 +210,43 @@
   .zone{
     width:100%;max-width:820px;margin-top:34px;
     background:var(--navy-light);
-    border-radius:20px;padding:22px 24px;
-    border:1px solid rgba(255,255,255,0.06);
+    border-radius:24px;padding:22px 24px;
+    border:2px solid rgba(255,255,255,0.06);
     box-shadow:0 12px 28px rgba(0,0,0,0.3);
   }
   .zone h2{font-family:'Baloo 2',sans-serif;font-size:20px;color:var(--gold);margin:0 0 4px;}
   .zone .zone-sub{font-size:13px;color:#8494B5;margin:0 0 14px;}
   .zone + .zone{margin-top:20px;}
+
+  .fact-card{
+    position:relative;
+    border-radius:18px;
+    padding:20px;
+    background:rgba(255,255,255,0.05);
+    border:2px dashed rgba(255,184,77,0.35);
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .fact-card.swap{opacity:0;transform:translateY(6px) scale(.98);}
+  .fact-emoji{font-size:34px;flex-shrink:0;}
+  .fact-tag{
+    display:inline-block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;
+    padding:3px 10px;border-radius:999px;margin-bottom:6px;
+  }
+  .fact-tag.football{background:rgba(221,0,0,0.18);color:#FF8A8A;}
+  .fact-tag.geography{background:rgba(46,196,182,0.18);color:var(--teal);}
+  .fact-tag.mountains{background:rgba(255,184,77,0.18);color:var(--gold);}
+  .fact-text{font-size:15.5px;line-height:1.5;color:var(--cream);margin:0;}
+  .fact-btn{
+    margin-top:16px;
+    font-family:'Baloo 2',sans-serif;cursor:pointer;border:none;border-radius:14px;font-weight:700;
+    background:linear-gradient(135deg,var(--pink),#e0537e);color:#fff;
+    padding:12px 22px;font-size:15px;box-shadow:0 5px 0 #b8395f;
+    transition:transform .05s ease;
+  }
+  .fact-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #b8395f;}
 
   .keepy-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
   .keepy-header h2{margin:0;}
@@ -220,19 +315,33 @@
 </style>
 </head>
 <body>
+  <div class="blob-field">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
   <h1>The Game Zone</h1>
   <p class="sub">Pick a game to play</p>
 
   <div class="made-for">
     <div class="label">Made especially for</div>
-    <div class="name-stage">
-      <span class="sparkle s1">✨</span>
-      <span class="sparkle s2">⭐</span>
-      <span class="sparkle s3">🌟</span>
-      <span class="sparkle s4">✨</span>
-      <span class="sparkle s5">💫</span>
-      <span class="sparkle s6">⭐</span>
-      <span class="letter">G</span><span class="letter">e</span><span class="letter">o</span><span class="letter">S</span><span class="letter">o</span><span class="letter">n</span>
+    <div class="name-medallion">
+      <div class="glow-ring"></div>
+      <div class="orbit-field">
+        <div class="orbit-arm a1"><span class="orbit-icon">⚽</span></div>
+        <div class="orbit-arm a2"><span class="orbit-icon">🌍</span></div>
+        <div class="orbit-arm a3"><span class="orbit-icon">🏔️</span></div>
+        <div class="orbit-arm a4"><span class="orbit-icon">🏆</span></div>
+      </div>
+      <div class="name-stage">
+        <span class="sparkle s1">✨</span>
+        <span class="sparkle s2">⭐</span>
+        <span class="sparkle s3">🌟</span>
+        <span class="sparkle s4">✨</span>
+        <span class="sparkle s5">💫</span>
+        <span class="sparkle s6">⭐</span>
+        <span class="letter">G</span><span class="letter">e</span><span class="letter">o</span><span class="letter">S</span><span class="letter">o</span><span class="letter">n</span>
+      </div>
     </div>
     <div class="tagline">🏆 Your very own game zone 🏆</div>
     <div class="aka">aka <span>ClawsTiger</span> 🐯 &middot; <span>MiniDragon</span> 🐉 &middot; <span>GeoSon</span> ⚡</div>
@@ -257,26 +366,39 @@
 
   <div class="grid">
     <a class="game-card" href="geography-quiz.html">
-      <div class="emoji">🌍</div>
+      <div class="emoji-badge">🌍</div>
       <h2>Capital Quest</h2>
       <p>Guess the capital city from the country shape.</p>
     </a>
     <a class="game-card" href="mountain-quiz.html">
-      <div class="emoji">🏔️</div>
+      <div class="emoji-badge">🏔️</div>
       <h2>Peak Challenge</h2>
       <p>Name each country's highest mountain, and how tall it is.</p>
     </a>
     <a class="game-card" href="football-quiz.html">
       <span class="fan-chip">🌳 NFFC</span>
-      <div class="emoji">⚽</div>
+      <div class="emoji-badge">⚽</div>
       <h2>Football Frenzy</h2>
       <p>Legends, Premier League, Champions League and more.</p>
     </a>
     <div class="game-card coming">
-      <div class="emoji">➕</div>
+      <div class="emoji-badge">➕</div>
       <h2>More coming soon</h2>
       <p>New games get added here.</p>
     </div>
+  </div>
+
+  <div class="zone">
+    <h2>🤓 Did You Know?</h2>
+    <p class="zone-sub">Random facts about football, the world and mountains — reload for more any time.</p>
+    <div class="fact-card" id="fact-card">
+      <div class="fact-emoji" id="fact-emoji">⚽</div>
+      <div>
+        <span class="fact-tag football" id="fact-tag">Football</span>
+        <p class="fact-text" id="fact-text">Loading a fact...</p>
+      </div>
+    </div>
+    <button class="fact-btn" id="fact-btn">🎲 Another fact!</button>
   </div>
 
   <div class="zone">
@@ -299,6 +421,66 @@
   GZ.renderStreak(document.getElementById("streak-banner"));
   GZ.renderBadgesGrid(document.getElementById("badges-grid"));
   GZ.renderBestScores(document.getElementById("best-scores-chart"));
+
+  /* ---------- Did You Know? fun facts ---------- */
+  (function () {
+    const FACTS = [
+      { cat: "football", emoji: "🌳", text: "Nottingham Forest won the European Cup two years in a row, in 1979 and 1980 — under manager Brian Clough." },
+      { cat: "football", emoji: "🏟️", text: "Forest's home, the City Ground, sits right on the bank of the River Trent." },
+      { cat: "football", emoji: "🐐", text: "Nottingham Forest was founded all the way back in 1865 — one of the oldest football clubs on Earth." },
+      { cat: "football", emoji: "🦵", text: "Cristiano Ronaldo can jump almost 80cm straight up — nearly as high as a kitchen counter!" },
+      { cat: "football", emoji: "🗣️", text: "Ronaldo's famous jumping celebration comes with his own shout: \"SIUUUU!\"" },
+      { cat: "football", emoji: "⚽", text: "A football match has 22 players on the pitch chasing just one ball." },
+      { cat: "football", emoji: "🏆", text: "The World Cup trophy isn't solid gold — it's made of 18-karat gold on the outside, wrapped around a hollow centre." },
+      { cat: "geography", emoji: "🧭", text: "Russia is so big it stretches across 11 time zones — more than any other country." },
+      { cat: "geography", emoji: "🏜️", text: "The Sahara Desert is nearly as big as the whole of the United States." },
+      { cat: "geography", emoji: "🇻🇦", text: "Vatican City is the smallest country in the world — you could walk across the whole thing in about 20 minutes." },
+      { cat: "geography", emoji: "💧", text: "Canada has more lakes than every other country in the world put together." },
+      { cat: "geography", emoji: "🌏", text: "Australia is both a country AND a continent — the only place on Earth that's both." },
+      { cat: "geography", emoji: "🗺️", text: "There are 195 recognised countries in the world for you to learn the capitals of." },
+      { cat: "mountains", emoji: "⛰️", text: "Mount Everest grows about 4mm taller every year as tectonic plates slowly push it up." },
+      { cat: "mountains", emoji: "🌋", text: "Measured from base to peak, the tallest mountain on Earth is actually Mauna Kea in Hawaii — most of it is hidden underwater!" },
+      { cat: "mountains", emoji: "🥶", text: "Even in summer, the temperature at the top of Everest can drop below -19°C." },
+      { cat: "mountains", emoji: "🏴", text: "Ben Nevis, the UK's highest mountain, is only 1,345 metres tall — tiny next to Everest's 8,849!" },
+      { cat: "mountains", emoji: "🐘", text: "You can climb Mount Kilimanjaro, Africa's highest peak, without ropes or climbing gear." },
+      { cat: "mountains", emoji: "🏔️", text: "The Alps are still growing slowly, as Africa's tectonic plate keeps pushing into Europe." }
+    ];
+    const tagLabel = { football: "Football", geography: "Geography", mountains: "Mountains" };
+
+    const factCard = document.getElementById("fact-card");
+    const factEmoji = document.getElementById("fact-emoji");
+    const factTag = document.getElementById("fact-tag");
+    const factText = document.getElementById("fact-text");
+    const factBtn = document.getElementById("fact-btn");
+
+    let lastIndex = -1;
+    function pickFact() {
+      let i;
+      do { i = Math.floor(Math.random() * FACTS.length); } while (i === lastIndex && FACTS.length > 1);
+      lastIndex = i;
+      return FACTS[i];
+    }
+
+    function showFact(animate) {
+      const f = pickFact();
+      const render = () => {
+        factEmoji.textContent = f.emoji;
+        factTag.textContent = tagLabel[f.cat];
+        factTag.className = "fact-tag " + f.cat;
+        factText.textContent = f.text;
+        factCard.classList.remove("swap");
+      };
+      if (animate) {
+        factCard.classList.add("swap");
+        setTimeout(render, 160);
+      } else {
+        render();
+      }
+    }
+
+    showFact(false);
+    factBtn.addEventListener("click", () => showFact(true));
+  })();
 
   /* ---------- Keepy-uppy mini game ---------- */
   (function () {
